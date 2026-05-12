@@ -1,0 +1,150 @@
+{
+    "pages": [
+        {
+            "path": "pages/explore/explore",
+            "style": {
+                "navigationBarTitleText": "探索",
+                "navigationStyle": "custom",
+                "enablePullDownRefresh": true
+            }
+        },
+        {
+            "path": "pages/dream-record/dream-record",
+            "style": {
+                "navigationBarTitleText": "记录梦境",
+                "enablePullDownRefresh": false
+            }
+        },
+        {
+            "path": "pages/discussion/discussion",
+            "style": {
+                "navigationBarTitleText": "讨论",
+                "navigationStyle": "custom",
+                "enablePullDownRefresh": true
+            }
+        },
+        {
+            "path": "pages/message/message",
+            "style": {
+                "navigationBarTitleText": "消息",
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/mine/mine",
+            "style": {
+                "navigationBarTitleText": "我的",
+                "navigationStyle": "custom"
+            }
+        }
+    ],
+    "subPackages": [
+        {
+            "root": "pages/detail",
+            "pages": [
+                {
+                    "path": "dream-detail",
+                    "style": {
+                        "navigationBarTitleText": "梦境详情"
+                    }
+                },
+                {
+                    "path": "dream-edit",
+                    "style": {
+                        "navigationBarTitleText": "编辑梦境"
+                    }
+                },
+                {
+                    "path": "discussion-detail",
+                    "style": {
+                        "navigationBarTitleText": "讨论详情"
+                    }
+                },
+                {
+                    "path": "profile",
+                    "style": {
+                        "navigationBarTitleText": "个人主页"
+                    }
+                },
+                {
+                    "path": "search",
+                    "style": {
+                        "navigationBarTitleText": "搜索"
+                    }
+                },
+                {
+                    "path": "settings",
+                    "style": {
+                        "navigationBarTitleText": "设置"
+                    }
+                },
+                {
+                    "path": "category",
+                    "style": {
+                        "navigationBarTitleText": "梦境分类"
+                    }
+                },
+                {
+                    "path": "notifications",
+                    "style": {
+                        "navigationBarTitleText": "通知"
+                    }
+                }
+            ]
+        },
+        {
+            "root": "pages/auth",
+            "pages": [
+                {
+                    "path": "login",
+                    "style": {
+                        "navigationBarTitleText": "登录",
+                        "navigationStyle": "custom"
+                    }
+                },
+                {
+                    "path": "register",
+                    "style": {
+                        "navigationBarTitleText": "注册",
+                        "navigationStyle": "custom"
+                    }
+                }
+            ]
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "white",
+        "navigationBarTitleText": "梦境分享",
+        "navigationBarBackgroundColor": "#6C5CE7",
+        "backgroundColor": "#F8F9FE",
+        "backgroundTextStyle": "light"
+    },
+    "tabBar": {
+        "color": "#B2BEC3",
+        "selectedColor": "#6C5CE7",
+        "backgroundColor": "#FFFFFF",
+        "borderStyle": "white",
+        "list": [
+            {
+                "pagePath": "pages/explore/explore",
+                "text": "探索"
+            },
+            {
+                "pagePath": "pages/dream-record/dream-record",
+                "text": "记录"
+            },
+            {
+                "pagePath": "pages/discussion/discussion",
+                "text": "讨论"
+            },
+            {
+                "pagePath": "pages/message/message",
+                "text": "消息"
+            },
+            {
+                "pagePath": "pages/mine/mine",
+                "text": "我的"
+            }
+        ]
+    }
+}

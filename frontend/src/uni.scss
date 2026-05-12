@@ -1,0 +1,49 @@
+/* 梦境分享App主题色 */
+$primary-color: #6C5CE7;
+$primary-light: #A29BFE;
+$primary-dark: #4834D4;
+$secondary-color: #00CEC9;
+$accent-color: #FD79A8;
+$bg-color: #F8F9FE;
+$card-bg: #FFFFFF;
+$text-primary: #2D3436;
+$text-secondary: #636E72;
+$text-light: #B2BEC3;
+$border-color: #E8E8E8;
+$success-color: #00B894;
+$warning-color: #FDCB6E;
+$error-color: #E17055;
+
+/* 页面底色 */
+page {
+    background-color: $bg-color;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: $text-primary;
+    font-size: 28rpx;
+}
+
+/* 通用样式 */
+.container {
+    padding: 24rpx;
+}
+
+.card {
+    background-color: $card-bg;
+    border-radius: 24rpx;
+    padding: 24rpx;
+    margin-bottom: 24rpx;
+    box-shadow: 0 4rpx 16rpx rgba(108, 92, 231, 0.08);
+}
+
+.section-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: 16rpx;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80rpx 0;
+    color: $text-light;
+}
