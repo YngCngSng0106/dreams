@@ -1,0 +1,29 @@
+package com.dreamshare.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Data
+@TableName("dream")
+public class Dream {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private Long userId;
+    private Long categoryId;
+    private LocalDate dreamDate;
+    private String location;
+    private String keywords;
+    private Integer clarity;
+    private String description;
+    private Boolean isRecurring;
+    private String tags;
+    private String images;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
+    @TableLogic
+    private Integer isDeleted;
+}

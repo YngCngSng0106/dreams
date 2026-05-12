@@ -1,0 +1,26 @@
+# Maven
+target/
+pom.xml.tag
+release.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Uploads
+uploads/
+
+# Config
+src/main/resources/application-local.yml
