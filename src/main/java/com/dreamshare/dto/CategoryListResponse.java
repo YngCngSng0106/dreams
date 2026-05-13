@@ -4,6 +4,7 @@ import lombok.Data;
 public class CategoryListResponse {
     private Long id;
     private String name;
+    private String code;
     private String icon;
     private String description;
 }

@@ -10,7 +10,7 @@
                         <text class="date">{{ dream.dreamDate }}</text>
                     </view>
                     <view class="actions">
-                        <text class="action-btn" @click="goEdit" v-if="isOwner">编辑</text>
+                        <text class="action-btn" @click="goEdit" v-if="isOwner">{{ $t('detail.edit') }}</text>
                     </view>
                 </view>
                 <view class="category-tag">{{ dream.category }}</view>
@@ -29,20 +29,20 @@
             <!-- 信息 -->
             <view class="info-card card">
                 <view class="info-row" v-if="dream.location">
-                    <text class="info-label">地点</text>
+                    <text class="info-label">{{ $t('detail.location') }}</text>
                     <text class="info-value">{{ dream.location }}</text>
                 </view>
                 <view class="info-row" v-if="dream.keywords">
-                    <text class="info-label">关键词</text>
+                    <text class="info-label">{{ $t('detail.keywords') }}</text>
                     <text class="info-value">{{ dream.keywords }}</text>
                 </view>
                 <view class="info-row" v-if="dream.clarity">
-                    <text class="info-label">清晰度</text>
+                    <text class="info-label">{{ $t('detail.clarity') }}</text>
                     <text class="info-value">{{ '⭐'.repeat(dream.clarity) }}</text>
                 </view>
                 <view class="info-row" v-if="dream.isRecurring">
-                    <text class="info-label">重复梦</text>
-                    <text class="info-value">是</text>
+                    <text class="info-label">{{ $t('detail.recurring') }}</text>
+                    <text class="info-value">{{ $t('detail.recurringYes') }}</text>
                 </view>
             </view>
             
@@ -59,17 +59,17 @@
                 </view>
                 <view class="action-item" @click="goSimilar">
                     <text class="action-icon">🔗</text>
-                    <text class="action-text">相似</text>
+                    <text class="action-text">{{ $t('detail.similar') }}</text>
                 </view>
                 <view class="action-item">
                     <text class="action-icon">📤</text>
-                    <text class="action-text">分享</text>
+                    <text class="action-text">{{ $t('detail.share') }}</text>
                 </view>
             </view>
             
             <!-- 相似梦境 -->
             <view class="similar-section" v-if="similarDreams.length > 0">
-                <view class="section-title">相似梦境</view>
+                <view class="section-title">{{ $t('detail.similar') }}{{ $t('detail.dreams') }}</view>
                 <view class="similar-card card" v-for="s in similarDreams" :key="s.dreamId" @click="goDetail(s.dreamId)">
                     <text class="similar-desc">{{ s.matchedFields }}</text>
                     <text class="similar-score">相似度 {{ (s.similarityScore * 100).toFixed(0) }}%</text>
@@ -78,7 +78,7 @@
         </view>
         
         <view class="empty-state" v-else>
-            <text>梦境不存在或已被删除</text>
+            <text>{{ $t('detail.notFound') }}</text>
         </view>
     </view>
 </template>

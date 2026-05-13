@@ -1,8 +1,8 @@
 <template>
     <view class="notification-page">
         <view class="header-bar">
-            <text class="title">通知</text>
-            <text class="mark-all" @click="markAllRead" v-if="notifications.length > 0">全部已读</text>
+            <text class="title">{{ $t('detail.notifications') }}</text>
+            <text class="mark-all" @click="markAllRead" v-if="notifications.length > 0">{{ $t('detail.markAllRead') }}</text>
         </view>
         
         <view class="notification-list">
@@ -18,7 +18,7 @@
         
         <view class="empty-state" v-if="notifications.length === 0">
             <text class="empty-icon">🔔</text>
-            <text>暂无通知</text>
+            <text>{{ $t('message.empty') }}</text>
         </view>
     </view>
 </template>
@@ -72,7 +72,7 @@ export default {
             try {
                 await notificationApi.markAllRead();
                 this.notifications.forEach(n => n.isRead = true);
-                uni.showToast({ title: '全部已读', icon: 'success' });
+                uni.showToast({ title: this.$t('detail.markAllRead'), icon: 'success' });
             } catch (e) {
                 console.error('Mark all read failed:', e);
             }

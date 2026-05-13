@@ -2,7 +2,6 @@
 export default {
     onLaunch() {
         console.log('梦境分享App启动');
-        // 检查登录状态
         const token = uni.getStorageSync('token');
         if (token) {
             console.log('用户已登录');
@@ -20,9 +19,9 @@ export default {
 <style lang="scss">
 @import './uni.scss';
 
-/* 全局重置 */
-* {
+page {
     box-sizing: border-box;
+    padding-bottom: 100rpx;
 }
 
 view, scroll-view, swiper, button, input, textarea {
@@ -30,15 +29,13 @@ view, scroll-view, swiper, button, input, textarea {
     margin: 0;
 }
 
-/* 渐变背景 */
 .gradient-bg {
     background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
 }
 
-/* 按钮样式 */
 .btn-primary {
-    background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
-    color: #FFFFFF;
+    background: linear-gradient(135deg, #FFFFFF 0%, #E8E0FF 100%);
+    color: #6C5CE7;
     border-radius: 48rpx;
     padding: 20rpx 48rpx;
     font-size: 28rpx;
@@ -59,21 +56,6 @@ view, scroll-view, swiper, button, input, textarea {
     border: 2rpx solid #6C5CE7;
 }
 
-/* 输入框样式 */
-input, textarea {
-    background: #FFFFFF;
-    border: 2rpx solid #E8E8E8;
-    border-radius: 16rpx;
-    padding: 20rpx 24rpx;
-    font-size: 28rpx;
-    color: #2D3436;
-}
-
-input:focus, textarea:focus {
-    border-color: #6C5CE7;
-}
-
-/* 标签 */
 .tag {
     display: inline-block;
     background: rgba(108, 92, 231, 0.1);

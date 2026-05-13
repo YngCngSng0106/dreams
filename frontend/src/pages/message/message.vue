@@ -3,7 +3,7 @@
         <!-- 自定义导航栏 -->
         <view class="navbar" :style="{height: statusBarHeight + 88 + 'rpx'}">
             <view class="navbar-content" :style="{paddingTop: statusBarHeight + 'rpx'}">
-                <text class="title">消息</text>
+                <text class="title">{{ $t('message.title') }}</text>
             </view>
         </view>
         
@@ -12,13 +12,13 @@
             <view class="notice-card card" @click="goNotifications">
                 <view class="notice-left">
                     <text class="notice-icon">🔔</text>
-                    <text class="notice-title">系统通知</text>
+                    <text class="notice-title">{{ $t('message.systemNotice') }}</text>
                 </view>
                 <view class="notice-badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
             </view>
             
             <!-- 最新通知列表 -->
-            <view class="section-title">最近通知</view>
+            <view class="section-title">{{ $t('message.recent') }}</view>
             
             <view class="notification-item" v-for="notif in notifications" :key="notif.id" @click="readNotification(notif)">
                 <image class="avatar" :src="'/static/default-avatar.png'" mode="aspectFill" />
@@ -32,10 +32,12 @@
             
             <view class="empty-state" v-if="notifications.length === 0">
                 <text class="empty-icon">📭</text>
-                <text class="empty-text">暂无通知</text>
+                <text class="empty-text">{{ $t('message.empty') }}</text>
             </view>
         </view>
     </view>
+
+    <custom-tab-bar ref="tabbar" />
 </template>
 
 <script>
@@ -61,6 +63,10 @@ export default {
         if (isLoggedIn()) {
             this.loadNotifications();
         }
+        this.$nextTick(() => {
+            const tabbar = this.$refs.tabbar;
+            if (tabbar) tabbar.updateCurrentPage();
+        });
     },
     methods: {
         async loadNotifications() {

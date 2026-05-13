@@ -10,6 +10,7 @@ CREATE TABLE `user` (
     `password` VARCHAR(255) NOT NULL,
     `nickname` VARCHAR(50) NOT NULL,
     `avatar` VARCHAR(255) DEFAULT NULL,
+    `email` VARCHAR(100) DEFAULT NULL,
     `gender` TINYINT DEFAULT 0,
     `bio` VARCHAR(500) DEFAULT '',
     `is_deleted` TINYINT DEFAULT 0,
@@ -45,23 +46,24 @@ DROP TABLE IF EXISTS `dream_category`;
 CREATE TABLE `dream_category` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(50) NOT NULL,
-    `icon` VARCHAR(255) DEFAULT NULL,
+    `code` VARCHAR(30) NOT NULL UNIQUE COMMENT '英文标识',
+    `icon` VARCHAR(10) DEFAULT NULL COMMENT 'emoji图标',
     `description` VARCHAR(255) DEFAULT NULL,
     `sort_order` INT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 插入预设分类
-INSERT INTO `dream_category` (`name`, `icon`, `description`, `sort_order`) VALUES
-('飞行', 'flight', '在天空中飞翔的梦境', 1),
-('坠落', 'fall', '从高处坠落的梦境', 2),
-('考试', 'exam', '参加考试的梦境', 3),
-('被追逐', 'chase', '被某物追赶的梦境', 4),
-('水', 'water', '与水相关的梦境', 5),
-('亲人', 'family', '与亲人相关的梦境', 6),
-('工作', 'work', '与工作相关的梦境', 7),
-('灵异', 'ghost', '超自然现象相关的梦境', 8),
-('爱情', 'love', '与爱情相关的梦境', 9),
-('其他', 'other', '其他类型梦境', 10);
+INSERT INTO `dream_category` (`name`, `code`, `icon`, `description`, `sort_order`) VALUES
+('飞行', 'flying', '🦅', '在天空中飞翔的梦境', 1),
+('坠落', 'falling', '🪨', '从高处坠落的梦境', 2),
+('考试', 'exam', '📝', '参加考试的梦境', 3),
+('被追逐', 'chase', '🏃', '被某物追赶的梦境', 4),
+('水', 'water', '🌊', '与水相关的梦境', 5),
+('亲人', 'family', '👨‍👩‍👧', '与亲人相关的梦境', 6),
+('工作', 'work', '💼', '与工作相关的梦境', 7),
+('灵异', 'ghost', '👻', '超自然现象相关的梦境', 8),
+('爱情', 'love', '💕', '与爱情相关的梦境', 9),
+('其他', 'other', '🔮', '其他类型梦境', 10);
 
 -- 4. 梦境点赞表
 DROP TABLE IF EXISTS `dream_like`;

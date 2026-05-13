@@ -1,38 +1,42 @@
 <template>
     <view class="profile-page">
+        <view class="header-bar">
+            <text class="title">{{ $t('detail.dreamsTab') }}</text>
+            <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中文' }}</text>
+        </view>
         <view class="profile-header gradient-bg" v-if="user">
             <image class="avatar" :src="user.avatar || '/static/default-avatar.png'" mode="aspectFill" />
             <text class="nickname">{{ user.nickname }}</text>
-            <text class="bio">{{ user.bio || '这个人很懒，什么都没写' }}</text>
+            <text class="bio">{{ user.bio || $t('detail.bioLazy') }}</text>
         </view>
         
         <view class="stats-row card">
             <view class="stat-item">
                 <text class="count">{{ user.dreamCount || 0 }}</text>
-                <text class="label">梦境</text>
+                <text class="label">{{ $t('detail.dreamsLabel') }}</text>
             </view>
             <view class="stat-divider"></view>
             <view class="stat-item">
                 <text class="count">{{ user.followingCount || 0 }}</text>
-                <text class="label">关注</text>
+                <text class="label">{{ $t('detail.followingLabel') }}</text>
             </view>
             <view class="stat-divider"></view>
             <view class="stat-item">
                 <text class="count">{{ user.followersCount || 0 }}</text>
-                <text class="label">粉丝</text>
+                <text class="label">{{ $t('detail.fansLabel') }}</text>
             </view>
         </view>
         
         <view class="action-row" v-if="isOtherUser">
             <button class="btn-primary" :class="{following: followStatus?.isFollowing}" @click="toggleFollow">
-                {{ followStatus?.isFollowing ? '已关注' : '+ 关注' }}
+                {{ followStatus?.isFollowing ? $t('detail.followingYes') : $t('detail.followingNo') }}
             </button>
         </view>
         
         <!-- Tab切换 -->
         <view class="tab-bar">
-            <view class="tab-item" :class="{active: currentTab === 'dreams'}" @click="currentTab = 'dreams'">梦境记录</view>
-            <view class="tab-item" :class="{active: currentTab === 'stats'}" @click="loadStats">统计数据</view>
+            <view class="tab-item" :class="{active: currentTab === 'dreams'}" @click="currentTab = 'dreams'">{{ $t('detail.dreamsTab') }}</view>
+            <view class="tab-item" :class="{active: currentTab === 'stats'}" @click="loadStats">{{ $t('detail.statsTab') }}</view>
         </view>
         
         <!-- 梦境列表 -->
@@ -47,21 +51,21 @@
         <!-- 统计信息 -->
         <view class="stats-detail card" v-if="currentTab === 'stats' && stats">
             <view class="stat-row">
-                <text class="label">最常做的梦</text>
-                <text class="value">{{ stats.topCategories?.[0]?.categoryName || '暂无' }}</text>
+                <text class="label">{{ $t('detail.topDream') }}</text>
+                <text class="value">{{ stats.topCategories?.[0]?.categoryName || $t('detail.none') }}</text>
             </view>
             <view class="stat-row">
-                <text class="label">平均清晰度</text>
+                <text class="label">{{ $t('detail.avgClarity') }}</text>
                 <text class="value">{{ (stats.avgClarity || 0).toFixed(1) }}⭐</text>
             </view>
             <view class="stat-row">
-                <text class="label">本月新增</text>
-                <text class="value">{{ stats.monthlyDreamCount || 0 }}个</text>
+                <text class="label">{{ $t('detail.monthlyNew') }}</text>
+                <text class="value">{{ stats.monthlyDreamCount || 0 }}{{ $t('detail.dreamsLabel') }}</text>
             </view>
         </view>
         
         <view class="empty-state" v-if="!user">
-            <text>用户不存在</text>
+            <text>{{ $t('detail.userNotFound') }}</text>
         </view>
     </view>
 </template>
@@ -69,6 +73,7 @@
 <script>
 import { userApi, followApi, statsApi } from '@/utils/api';
 import { getUserId, isLoggedIn } from '@/utils/auth';
+import { setLocale } from '@/locale';
 
 export default {
     data() {
@@ -79,10 +84,12 @@ export default {
             stats: null,
             currentTab: 'dreams',
             followStatus: null,
-            isOtherUser: true
+            isOtherUser: true,
+            currentLang: 'zh'
         };
     },
     onLoad(options) {
+        this.currentLang = uni.getStorageSync('locale') || 'zh';
         this.userId = options.id;
         this.isOtherUser = this.userId !== getUserId();
         this.loadProfile();
@@ -92,6 +99,11 @@ export default {
         }
     },
     methods: {
+        toggleLang() {
+            this.currentLang = this.currentLang === 'zh' ? 'en' : 'zh';
+            setLocale(this.currentLang);
+        },
+        
         async loadProfile() {
             try {
                 this.user = await userApi.getUserProfile(this.userId);
@@ -159,6 +171,28 @@ export default {
 .profile-page {
     min-height: 100vh;
     background: #F8F9FE;
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx;
+    padding-top: calc(24rpx + env(safe-area-inset-top));
+    
+    .title {
+        font-size: 36rpx;
+        font-weight: 700;
+        color: #2D3436;
+    }
+    
+    .lang-btn {
+        font-size: 24rpx;
+        color: #6C5CE7;
+        background: rgba(108, 92, 231, 0.1);
+        padding: 8rpx 16rpx;
+        border-radius: 24rpx;
+    }
 }
 
 .profile-header {

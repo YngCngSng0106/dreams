@@ -4,17 +4,17 @@
             <text class="title">{{ discussion.title }}</text>
             <text class="desc">{{ discussion.description }}</text>
             <view class="meta">
-                <text>创建者: {{ discussion.creatorNickname }}</text>
-                <text>成员: {{ discussion.memberCount }}人</text>
+                <text>{{ $t('detail.creator') }}: {{ discussion.creatorNickname }}</text>
+                <text>{{ $t('detail.members') }}: {{ discussion.memberCount }}</text>
             </view>
             <view class="actions" v-if="isLoggedIn">
-                <button class="btn-primary" size="mini" @click="joinDiscussion" v-if="!isMember">加入讨论</button>
-                <button class="btn-secondary" size="mini" @click="leaveDiscussion" v-else>退出讨论</button>
+                <button class="btn-primary" size="mini" @click="joinDiscussion" v-if="!isMember">{{ $t('detail.join') }}</button>
+                <button class="btn-secondary" size="mini" @click="leaveDiscussion" v-else>{{ $t('detail.leave') }}</button>
             </view>
         </view>
         
         <!-- 评论列表 -->
-        <view class="section-title">讨论内容</view>
+        <view class="section-title">{{ $t('detail.content') }}</view>
         
         <view class="comment-item card" v-for="comment in comments" :key="comment.commentId">
             <view class="comment-header">
@@ -29,7 +29,7 @@
                     <text>{{ comment.likeCount }}</text>
                 </view>
                 <view class="reply-btn" @click="replyTo(comment)">
-                    <text>回复</text>
+                    <text>{{ $t('detail.reply') }}</text>
                 </view>
             </view>
             
@@ -41,13 +41,13 @@
         
         <!-- 评论输入框 -->
         <view class="comment-input" v-if="isLoggedIn">
-            <input v-model="newComment" placeholder="说点什么..." class="input" />
-            <button class="send-btn" @click="sendComment" size="mini">发送</button>
+            <input v-model="newComment" :placeholder="$t('detail.writeComment')" class="input" />
+            <button class="send-btn" @click="sendComment" size="mini">{{ $t('detail.publishComment') }}</button>
         </view>
         
         <view class="empty-state" v-if="!isLoggedIn">
-            <text class="empty-text">请先登录后参与讨论</text>
-            <button class="btn-primary" @click="goLogin">去登录</button>
+            <text class="empty-text">{{ $t('detail.loginFirst') }}</text>
+            <button class="btn-primary" @click="goLogin">{{ $t('detail.goLogin') }}</button>
         </view>
     </view>
 </template>
@@ -106,7 +106,7 @@ export default {
             try {
                 await discussionApi.join(this.discussionId);
                 this.isMember = true;
-                uni.showToast({ title: '加入成功', icon: 'success' });
+                uni.showToast({ title: this.$t('detail.joinSuccess'), icon: 'success' });
             } catch (e) {
                 console.error('Join failed:', e);
             }
@@ -117,7 +117,7 @@ export default {
             try {
                 await discussionApi.leave(this.discussionId);
                 this.isMember = false;
-                uni.showToast({ title: '已退出', icon: 'success' });
+                uni.showToast({ title: this.$t('detail.leaveSuccess'), icon: 'success' });
             } catch (e) {
                 console.error('Leave failed:', e);
             }
@@ -135,7 +135,7 @@ export default {
                 this.newComment = '';
                 this.replyToId = null;
                 await this.loadComments();
-                uni.showToast({ title: '发送成功', icon: 'success' });
+                uni.showToast({ title: this.$t('detail.commentSuccess'), icon: 'success' });
             } catch (e) {
                 console.error('Send comment failed:', e);
             }

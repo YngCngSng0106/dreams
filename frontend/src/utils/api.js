@@ -1,11 +1,14 @@
 import { request } from './request';
 
+
 // 认证
 export const authApi = {
     register: (data) => request({ url: '/api/auth/register', method: 'POST', data }),
     login: (data) => request({ url: '/api/auth/login', method: 'POST', data }),
     logout: () => request({ url: '/api/auth/logout', method: 'POST' }),
-    verify: () => request({ url: '/api/auth/verify' })
+    verify: () => request({ url: '/api/auth/verify' }),
+    sendCode: (data) => request({ url: '/api/auth/send-code', method: 'POST', data }),
+    resetPassword: (data) => request({ url: '/api/auth/reset-password', method: 'POST', data })
 };
 
 // 用户

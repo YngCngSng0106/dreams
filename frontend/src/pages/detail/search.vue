@@ -1,24 +1,28 @@
 <template>
     <view class="search-page">
+        <view class="header-bar">
+            <text class="title">{{ $t('explore.search') }}</text>
+            <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中文' }}</text>
+        </view>
         <view class="search-bar">
             <view class="search-input-wrapper">
                 <text class="search-icon">🔍</text>
-                <input v-model="keyword" placeholder="搜索梦境、用户、讨论组" @confirm="doSearch" class="search-input" />
+                <input v-model="keyword" :placeholder="$t('detail.searchPlaceholder')" @confirm="doSearch" class="search-input" />
                 <text class="clear-btn" @click="clearSearch" v-if="keyword">×</text>
             </view>
         </view>
         
         <view class="result-section" v-if="hasSearched">
             <view class="tab-bar">
-                <view class="tab-item" :class="{active: searchType === 'all'}" @click="searchType = 'all'; doSearch()">全部</view>
-                <view class="tab-item" :class="{active: searchType === 'dream'}" @click="searchType = 'dream'; doSearch()">梦境</view>
-                <view class="tab-item" :class="{active: searchType === 'user'}" @click="searchType = 'user'; doSearch()">用户</view>
-                <view class="tab-item" :class="{active: searchType === 'discussion'}" @click="searchType = 'discussion'; doSearch()">讨论</view>
+                <view class="tab-item" :class="{active: searchType === 'all'}" @click="searchType = 'all'; doSearch()">{{ $t('detail.allTab') }}</view>
+                <view class="tab-item" :class="{active: searchType === 'dream'}" @click="searchType = 'dream'; doSearch()">{{ $t('detail.dreamsCount') }}</view>
+                <view class="tab-item" :class="{active: searchType === 'user'}" @click="searchType = 'user'; doSearch()">{{ $t('detail.usersCount') }}</view>
+                <view class="tab-item" :class="{active: searchType === 'discussion'}" @click="searchType = 'discussion'; doSearch()">{{ $t('detail.discussionsCount') }}</view>
             </view>
             
             <!-- 梦境结果 -->
             <view class="result-group" v-if="(searchType === 'all' || searchType === 'dream') && results.dreams?.length">
-                <text class="group-title">梦境 ({{ results.dreams.length }})</text>
+                <text class="group-title">{{ $t('detail.dreamResults') }} ({{ results.dreams.length }})</text>
                 <view class="result-item card" v-for="item in results.dreams" :key="item.id" @click="goDreamDetail(item.id)">
                     <text class="item-title">{{ item.description }}</text>
                     <text class="item-meta">{{ item.nickname }} · {{ item.category }}</text>
@@ -27,31 +31,31 @@
             
             <!-- 用户结果 -->
             <view class="result-group" v-if="(searchType === 'all' || searchType === 'user') && results.users?.length">
-                <text class="group-title">用户 ({{ results.users.length }})</text>
+                <text class="group-title">{{ $t('detail.userResults') }} ({{ results.users.length }})</text>
                 <view class="result-item card" v-for="item in results.users" :key="item.id" @click="goProfile(item.id)">
                     <text class="item-title">{{ item.nickname }}</text>
-                    <text class="item-meta">{{ item.bio || '暂无简介' }}</text>
+                    <text class="item-meta">{{ item.bio || $t('detail.noBio') }}</text>
                 </view>
             </view>
             
             <!-- 讨论结果 -->
             <view class="result-group" v-if="(searchType === 'all' || searchType === 'discussion') && results.discussions?.length">
-                <text class="group-title">讨论组 ({{ results.discussions.length }})</text>
+                <text class="group-title">{{ $t('detail.discussionResults') }} ({{ results.discussions.length }})</text>
                 <view class="result-item card" v-for="item in results.discussions" :key="item.id" @click="goDiscussion(item.id)">
                     <text class="item-title">{{ item.title }}</text>
-                    <text class="item-meta">{{ item.creatorNickname }} · {{ item.memberCount }}人</text>
+                    <text class="item-meta">{{ item.creatorNickname }} · {{ item.memberCount }}{{ $t('detail.fansLabel') }}</text>
                 </view>
             </view>
             
             <view class="empty-state" v-if="!results.dreams?.length && !results.users?.length && !results.discussions?.length">
                 <text class="empty-icon">🔍</text>
-                <text>没有找到相关结果</text>
+                <text>{{ $t('detail.noResults') }}</text>
             </view>
         </view>
         
         <!-- 热门标签 -->
         <view class="hot-tags" v-if="!hasSearched">
-            <text class="section-title">热门搜索</text>
+            <text class="section-title">{{ $t('detail.hotSearch') }}</text>
             <view class="tags">
                 <text class="tag" v-for="tag in hotTags" :key="tag.tag" @click="searchFor(tag.tag)">{{ tag.tag }}</text>
             </view>
@@ -61,6 +65,7 @@
 
 <script>
 import { searchApi } from '@/utils/api';
+import { setLocale } from '@/locale';
 
 export default {
     data() {
@@ -69,13 +74,20 @@ export default {
             searchType: 'all',
             hasSearched: false,
             results: { dreams: [], users: [], discussions: [] },
-            hotTags: []
+            hotTags: [],
+            currentLang: 'zh'
         };
     },
     onLoad() {
+        this.currentLang = uni.getStorageSync('locale') || 'zh';
         this.loadHotTags();
     },
     methods: {
+        toggleLang() {
+            this.currentLang = this.currentLang === 'zh' ? 'en' : 'zh';
+            setLocale(this.currentLang);
+        },
+        
         async loadHotTags() {
             try {
                 this.hotTags = await searchApi.tags('');
@@ -126,6 +138,27 @@ export default {
     background: #F8F9FE;
     padding: 24rpx;
     padding-top: calc(24rpx + env(safe-area-inset-top));
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12rpx;
+    
+    .title {
+        font-size: 36rpx;
+        font-weight: 700;
+        color: #2D3436;
+    }
+    
+    .lang-btn {
+        font-size: 24rpx;
+        color: #6C5CE7;
+        background: rgba(108, 92, 231, 0.1);
+        padding: 8rpx 16rpx;
+        border-radius: 24rpx;
+    }
 }
 
 .search-bar {

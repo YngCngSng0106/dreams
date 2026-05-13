@@ -1,9 +1,8 @@
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://10.245.181.47:8080';
 
 export function request(options) {
     const { url, method = 'GET', data = {}, header = {} } = options;
     
-    // 添加token
     const token = uni.getStorageSync('token');
     if (token) {
         header['Authorization'] = 'Bearer ' + token;
@@ -20,14 +19,14 @@ export function request(options) {
             header,
             success: (res) => {
                 uni.hideLoading();
-                if (res.statusCode === 200 && res.data.code === 200) {
+                if (res.statusCode === 200 && res.data && res.data.code === 200) {
                     resolve(res.data.data);
                 } else if (res.statusCode === 401) {
                     uni.clearStorageSync();
                     uni.redirectTo({ url: '/pages/auth/login' });
                     reject(new Error('请重新登录'));
                 } else {
-                    const msg = res.data.message || '请求失败';
+                    const msg = (res.data && res.data.message) || '请求失败';
                     uni.showToast({ title: msg, icon: 'none' });
                     reject(new Error(msg));
                 }
@@ -55,11 +54,15 @@ export function uploadFile(filePath, name = 'file') {
             },
             success: (res) => {
                 uni.hideLoading();
-                const data = JSON.parse(res.data);
-                if (data.code === 200) {
-                    resolve(data.data);
-                } else {
-                    reject(new Error(data.message));
+                try {
+                    const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+                    if (data.code === 200) {
+                        resolve(data.data);
+                    } else {
+                        reject(new Error(data.message || '上传失败'));
+                    }
+                } catch (e) {
+                    reject(new Error('上传失败'));
                 }
             },
             fail: (err) => {

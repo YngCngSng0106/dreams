@@ -2,43 +2,48 @@
     <view class="gradient-bg register-page">
         <view class="header-bar">
             <text class="back-btn" @click="goBack">←</text>
-            <text class="page-title">注册账号</text>
-            <view style="width:48rpx"></view>
+            <text class="page-title">{{ $t('auth.register') }}</text>
+            <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中' }}</text>
         </view>
         
         <view class="logo-section">
             <text class="logo-text">💭</text>
-            <text class="app-name">梦境分享</text>
+            <text class="app-name">{{ $t('app.name') }}</text>
         </view>
         
-        <view class="form-section card">
-            <view class="input-group">
-                <text class="label">用户名</text>
-                <input v-model="username" placeholder="请输入用户名" class="input-field" />
+        <view class="form-section">
+            <view class="input-row">
+                <text class="row-label">{{ $t('auth.username') }}</text>
+                <input class="row-input" v-model="username" :placeholder="$t('auth.placeholder.username')" placeholder-class="input-placeholder" />
             </view>
             
-            <view class="input-group">
-                <text class="label">昵称</text>
-                <input v-model="nickname" placeholder="请输入昵称" class="input-field" />
+            <view class="input-row">
+                <text class="row-label">{{ $t('auth.nickname') }}</text>
+                <input class="row-input" v-model="nickname" :placeholder="$t('auth.placeholder.nickname')" placeholder-class="input-placeholder" />
             </view>
             
-            <view class="input-group">
-                <text class="label">密码</text>
-                <input v-model="password" type="password" placeholder="请输入密码" class="input-field" />
+            <view class="input-row">
+                <text class="row-label">{{ $t('auth.email') }}</text>
+                <input class="row-input" v-model="email" :placeholder="$t('auth.placeholder.email')" placeholder-class="input-placeholder" type="email" />
             </view>
             
-            <view class="input-group">
-                <text class="label">确认密码</text>
-                <input v-model="confirmPassword" type="password" placeholder="请再次输入密码" class="input-field" />
+            <view class="input-row">
+                <text class="row-label">{{ $t('auth.password') }}</text>
+                <input class="row-input" v-model="password" :placeholder="$t('auth.placeholder.password')" placeholder-class="input-placeholder" type="password" />
             </view>
             
-            <button class="btn-primary register-btn" @click="handleRegister" :loading="loading">
-                注 册
+            <view class="input-row">
+                <text class="row-label">{{ $t('auth.confirmPassword') }}</text>
+                <input class="row-input" v-model="confirmPassword" :placeholder="$t('auth.placeholder.confirmPassword')" placeholder-class="input-placeholder" type="password" />
+            </view>
+            
+            <button class="register-btn" @click="handleRegister" :loading="loading">
+                {{ $t('auth.register') }}
             </button>
             
             <view class="footer-link">
-                <text>已有账号？</text>
-                <text class="link" @click="goLogin">立即登录</text>
+                <text>{{ $t('auth.hasAccount') }}</text>
+                <text class="link" @click="goLogin">{{ $t('auth.loginNow') }}</text>
             </view>
         </view>
     </view>
@@ -47,29 +52,40 @@
 <script>
 import { authApi } from '@/utils/api';
 import { setToken, setUserId } from '@/utils/auth';
+import { setLocale } from '@/locale/index';
 
 export default {
+    computed: {
+        currentLang() {
+            return this.$i18n.locale;
+        }
+    },
     data() {
         return {
             username: '',
             nickname: '',
+            email: '',
             password: '',
             confirmPassword: '',
             loading: false
         };
     },
     methods: {
+        toggleLang() {
+            const next = this.currentLang === 'zh' ? 'en' : 'zh';
+            setLocale(next);
+        },
         async handleRegister() {
             if (!this.username || !this.nickname || !this.password) {
-                uni.showToast({ title: '请填写完整信息', icon: 'none' });
+                uni.showToast({ title: this.$t('auth.fillAll'), icon: 'none' });
                 return;
             }
             if (this.password !== this.confirmPassword) {
-                uni.showToast({ title: '两次密码不一致', icon: 'none' });
+                uni.showToast({ title: this.$t('auth.passwordMismatch'), icon: 'none' });
                 return;
             }
             if (this.password.length < 6) {
-                uni.showToast({ title: '密码至少6位', icon: 'none' });
+                uni.showToast({ title: this.$t('auth.passwordShort'), icon: 'none' });
                 return;
             }
             this.loading = true;
@@ -77,11 +93,12 @@ export default {
                 const res = await authApi.register({
                     username: this.username,
                     nickname: this.nickname,
-                    password: this.password
+                    password: this.password,
+                    email: this.email
                 });
                 setToken(res.token);
                 setUserId(res.userId);
-                uni.showToast({ title: '注册成功', icon: 'success' });
+                uni.showToast({ title: this.$t('auth.registerSuccess'), icon: 'success' });
                 setTimeout(() => {
                     uni.switchTab({ url: '/pages/explore/explore' });
                 }, 1000);
@@ -101,7 +118,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .register-page {
     min-height: 100vh;
     display: flex;
@@ -117,35 +134,44 @@ export default {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20rpx;
-    
-    .back-btn {
-        font-size: 40rpx;
-        color: #FFFFFF;
-    }
-    
-    .page-title {
-        font-size: 32rpx;
-        color: #FFFFFF;
-        font-weight: 600;
-    }
+}
+
+.back-btn {
+    font-size: 40rpx;
+    color: #FFFFFF;
+}
+
+.page-title {
+    font-size: 32rpx;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.lang-btn {
+    font-size: 26rpx;
+    color: #FFFFFF;
+    opacity: 0.8;
+    padding: 8rpx 16rpx;
+    border: 2rpx solid rgba(255,255,255,0.4);
+    border-radius: 24rpx;
 }
 
 .logo-section {
     text-align: center;
     margin-bottom: 40rpx;
-    
-    .logo-text {
-        font-size: 80rpx;
-        display: block;
-        margin-bottom: 12rpx;
-    }
-    
-    .app-name {
-        font-size: 36rpx;
-        font-weight: 700;
-        color: #FFFFFF;
-        display: block;
-    }
+}
+
+.logo-text {
+    font-size: 80rpx;
+    display: block;
+    margin-bottom: 12rpx;
+}
+
+.app-name {
+    font-size: 36rpx;
+    font-weight: 700;
+    color: #FFFFFF;
+    display: block;
 }
 
 .form-section {
@@ -153,43 +179,70 @@ export default {
     max-width: 640rpx;
 }
 
-.input-group {
+.input-row {
+    display: flex !important;
+    align-items: center !important;
     margin-bottom: 28rpx;
-    
-    .label {
-        font-size: 26rpx;
-        color: #636E72;
-        margin-bottom: 10rpx;
-        display: block;
-    }
+    white-space: nowrap;
 }
 
-.input-field {
-    background: rgba(255,255,255,0.9);
-    border: none;
-    border-radius: 16rpx;
-    padding: 18rpx 24rpx;
+.row-label {
     font-size: 28rpx;
-    color: #2D3436;
+    color: #FFFFFF;
+    width: 120rpx !important;
+    min-width: 120rpx;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.row-input {
+    flex: 1 !important;
+    background: rgba(255,255,255,0.15) !important;
+    border: 2rpx solid rgba(255,255,255,0.3) !important;
+    border-radius: 16rpx !important;
+    padding: 20rpx 24rpx !important;
+    font-size: 28rpx !important;
+    color: #FFFFFF !important;
+    height: 80rpx !important;
+    min-width: 0;
+}
+
+.input-placeholder {
+    color: rgba(255,255,255,0.45) !important;
 }
 
 .register-btn {
     width: 100%;
-    margin-top: 16rpx;
-    font-size: 32rpx;
-    letter-spacing: 8rpx;
+    background: linear-gradient(135deg, #FFFFFF 0%, #E8E0FF 100%) !important;
+    color: #6C5CE7 !important;
+    border: none !important;
+    border-radius: 48rpx !important;
+    padding: 20rpx 48rpx !important;
+    font-size: 32rpx !important;
+    font-weight: 600 !important;
+    letter-spacing: 8rpx !important;
+    margin-top: 8rpx !important;
+}
+
+.register-btn::after {
+    border: none !important;
+}
+
+.register-btn:active {
+    opacity: 0.85;
 }
 
 .footer-link {
     text-align: center;
-    margin-top: 28rpx;
+    margin-top: 40rpx;
     font-size: 26rpx;
     color: rgba(255,255,255,0.7);
-    
-    .link {
-        color: #FFFFFF;
-        font-weight: 600;
-        margin-left: 8rpx;
-    }
+}
+
+.link {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    margin-left: 8rpx !important;
+    text-decoration: underline !important;
 }
 </style>

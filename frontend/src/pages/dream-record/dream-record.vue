@@ -1,356 +1,361 @@
 <template>
-    <view class="record-page">
-        <view class="page-header">
-            <text class="title">记录梦境</text>
-            <text class="subtitle">描述你今晚的梦</text>
+    <view class="gradient-bg dream-record-page">
+        <view class="header-bar">
+            <text class="title">{{ $t('record.title') }}</text>
+            <text class="subtitle">{{ $t('record.subtitle') }}</text>
         </view>
         
-        <view class="form-container">
-            <!-- 分类选择 -->
+        <view class="form-section">
             <view class="form-item">
-                <view class="item-header" @click="showCategoryPicker = true">
-                    <text class="label">梦境类型</text>
-                    <text class="value">{{ currentCategory || '请选择' }}</text>
-                    <text class="arrow">›</text>
+                <text class="label">{{ $t('record.dreamType') }}</text>
+                <text class="value">{{ currentCategory || $t('record.pleaseSelect') }}</text>
+                <text class="arrow">›</text>
+            </view>
+            
+            <view class="form-item" @click="pickDate">
+                <text class="label">{{ $t('record.dreamDate') }}</text>
+                <text class="value">{{ dreamDate || $t('record.pleaseSelect') }}</text>
+                <text class="arrow">›</text>
+            </view>
+            
+            <view class="form-item">
+                <text class="label">{{ $t('record.location') }}</text>
+                <input class="input" v-model="location" :placeholder="$t('record.locationPlaceholder')" />
+            </view>
+            
+            <view class="form-item">
+                <text class="label">{{ $t('record.keywords') }}</text>
+                <input class="input" v-model="keywords" :placeholder="$t('record.keywordsPlaceholder')" />
+            </view>
+            
+            <view class="form-item">
+                <text class="label">{{ $t('record.clarity') }}</text>
+                <view class="clarity-options">
+                    <text class="clarity-btn" :class="{active: clarity===1}" @click="clarity=1">低</text>
+                    <text class="clarity-btn" :class="{active: clarity===2}" @click="clarity=2">中</text>
+                    <text class="clarity-btn" :class="{active: clarity===3}" @click="clarity=3">高</text>
                 </view>
             </view>
             
-            <!-- 做梦日期 -->
             <view class="form-item">
-                <view class="item-header" @click="showDatePicker = true">
-                    <text class="label">做梦日期</text>
-                    <text class="value">{{ dreamDate || '请选择' }}</text>
-                    <text class="arrow">›</text>
-                </view>
+                <text class="label">{{ $t('record.description') }}</text>
+                <textarea class="textarea" v-model="description" :placeholder="$t('record.descriptionPlaceholder')" maxlength="2000" />
             </view>
             
-            <!-- 发生地点 -->
             <view class="form-item">
-                <text class="label">发生地点</text>
-                <input class="input" v-model="location" placeholder="梦中的地点" />
+                <text class="label">{{ $t('record.isRecurring') }}</text>
+                <switch :checked="isRecurring" @change="isRecurring=$event.detail.value" color="#6C5CE7" />
             </view>
             
-            <!-- 关键词 -->
-            <view class="form-item">
-                <text class="label">关键词</text>
-                <input class="input" v-model="keywords" placeholder="用逗号分隔多个关键词" />
-            </view>
-            
-            <!-- 清晰度 -->
-            <view class="form-item">
-                <text class="label">清晰度</text>
-                <view class="clarity-picker">
-                    <view class="clarity-item" :class="{active: clarity >= i}" v-for="i in 5" :key="i" @click="clarity = i">
-                        ⭐
-                    </view>
-                </view>
-            </view>
-            
-            <!-- 详细描述 -->
-            <view class="form-item">
-                <text class="label">梦境描述</text>
-                <textarea class="textarea" v-model="description" placeholder="详细描述你的梦境..." maxlength="2000" />
-                <text class="char-count">{{ description.length }}/2000</text>
-            </view>
-            
-            <!-- 是否重复 -->
-            <view class="form-item">
-                <text class="label">这是重复的梦吗？</text>
-                <switch :checked="isRecurring" @change="isRecurring = $event.detail.value" color="#6C5CE7" />
-            </view>
-            
-            <!-- 图片上传 -->
-            <view class="form-item">
-                <text class="label">上传图片(可选)</text>
+            <view class="form-item" v-if="imageList.length > 0 || imageList.length < 3">
+                <text class="label">{{ $t('record.uploadImage') }}</text>
                 <view class="image-list">
-                    <view class="image-item" v-for="(img, idx) in images" :key="idx">
-                        <image class="preview-img" :src="img" mode="aspectFill" />
-                        <view class="delete-btn" @click="removeImage(idx)">×</view>
+                    <view class="image-item" v-for="(img, index) in imageList" :key="index">
+                        <image :src="img" mode="aspectFill" class="preview-img" />
+                        <text class="delete-icon" @click="imageList.splice(index,1)">✕</text>
                     </view>
-                    <view class="upload-btn" v-if="images.length < 3" @click="chooseImage">
-                        <text class="upload-icon">+</text>
-                    </view>
+                    <view class="upload-btn" v-if="imageList.length < 3" @click="uploadImage">+</view>
                 </view>
             </view>
             
-            <button class="btn-primary submit-btn" @click="submitDream" :loading="submitting">
-                发布梦境
+            <button class="publish-btn" @click="submitDream" :loading="submitting">
+                {{ $t('record.publish') }}
             </button>
         </view>
+        
+        <view class="category-modal" v-if="showCategory" @click="showCategory=false">
+            <view class="modal-content" @click.stop>
+                <text class="modal-title">选择梦境类型</text>
+                <view class="category-item" v-for="cat in categories" :key="cat.id" @click="selectCategory(cat)">
+                    <text>{{ cat.name }}</text>
+                </view>
+            </view>
+        </view>
     </view>
+
+    <custom-tab-bar ref="tabbar" />
 </template>
 
 <script>
-import { dreamApi, categoryApi, uploadFile } from '@/utils/request';
-import { requireLogin } from '@/utils/auth';
-import { uploadFile } from '@/utils/request';
-import dayjs from 'dayjs';
+import { dreamApi, categoryApi } from '@/utils/api';
+import { requireLogin, getToken } from '@/utils/auth';
+import { setLocale } from '@/locale';
 
 export default {
     data() {
         return {
-            categories: [],
+            dreamType: '',
             currentCategory: '',
-            categoryId: null,
-            dreamDate: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+            dreamDate: '',
             location: '',
             keywords: '',
-            clarity: 3,
+            clarity: 2,
             description: '',
             isRecurring: false,
-            images: [],
-            imageUrls: [],
-            showCategoryPicker: false,
-            showDatePicker: false,
-            submitting: false
+            imageList: [],
+            categories: [],
+            showCategory: false,
+            submitting: false,
+            currentLang: uni.getStorageSync('locale') || 'zh'
         };
     },
     async onLoad() {
         if (!requireLogin()) return;
         await this.loadCategories();
     },
+    onShow() {
+        this.$nextTick(() => {
+            const tabbar = this.$refs.tabbar;
+            if (tabbar) tabbar.updateCurrentPage();
+        });
+    },
     methods: {
+        toggleLang() {
+            const next = this.currentLang === 'zh' ? 'en' : 'zh';
+            this.currentLang = next;
+            setLocale(next);
+        },
         async loadCategories() {
             try {
                 this.categories = await categoryApi.list();
                 if (this.categories.length > 0) {
                     this.currentCategory = this.categories[0].name;
-                    this.categoryId = this.categories[0].id;
                 }
             } catch (e) {
                 console.error('Load categories failed:', e);
             }
         },
-        
-        async submitDream() {
-            if (!this.description.trim()) {
-                uni.showToast({ title: '请填写梦境描述', icon: 'none' });
-                return;
-            }
-            if (!this.categoryId) {
-                uni.showToast({ title: '请选择梦境类型', icon: 'none' });
-                return;
-            }
-            
-            // 先上传图片
-            for (const img of this.images) {
-                try {
-                    const res = await uploadFile(img);
-                    this.imageUrls.push(res.url);
-                } catch (e) {
-                    console.error('Upload failed:', e);
-                }
-            }
-            
-            this.submitting = true;
-            try {
-                await dreamApi.create({
-                    categoryId: this.categoryId,
-                    dreamDate: this.dreamDate,
-                    location: this.location,
-                    keywords: this.keywords,
-                    clarity: this.clarity,
-                    description: this.description,
-                    isRecurring: this.isRecurring,
-                    images: JSON.stringify(this.imageUrls)
-                });
-                
-                uni.showToast({ title: '发布成功', icon: 'success' });
-                
-                // 重置表单
-                this.description = '';
-                this.location = '';
-                this.keywords = '';
-                this.clarity = 3;
-                this.isRecurring = false;
-                this.images = [];
-                this.imageUrls = [];
-                
-                // 跳转到探索页
-                setTimeout(() => {
-                    uni.switchTab({ url: '/pages/explore/explore' });
-                }, 1500);
-            } catch (e) {
-                console.error('Submit failed:', e);
-            } finally {
-                this.submitting = false;
-            }
+        pickDate() {
+            const d = new Date();
+            this.dreamDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         },
-        
-        chooseImage() {
+        selectCategory(cat) {
+            this.currentCategory = cat.name;
+            this.dreamType = String(cat.id);
+            this.showCategory = false;
+        },
+        uploadImage() {
             uni.chooseImage({
-                count: 3 - this.images.length,
+                count: 3 - this.imageList.length,
                 success: (res) => {
-                    this.images = this.images.concat(res.tempFilePaths);
+                    this.imageList.push(...res.tempFilePaths);
                 }
             });
         },
-        
-        removeImage(idx) {
-            this.images.splice(idx, 1);
+        async submitDream() {
+            if (!this.description) {
+                uni.showToast({ title: this.$t('record.fillDesc'), icon: 'none' });
+                return;
+            }
+            if (!this.currentCategory) {
+                uni.showToast({ title: this.$t('record.selectType'), icon: 'none' });
+                return;
+            }
+            this.submitting = true;
+            try {
+                await dreamApi.create({
+                    categoryId: this.dreamType,
+                    title: this.description.substring(0, 50),
+                    content: this.description,
+                    dreamDate: this.dreamDate,
+                    location: this.location,
+                    keywords: this.keywords.split(',').filter(k => k.trim()),
+                    clarity: this.clarity,
+                    isRecurring: this.isRecurring
+                });
+                uni.showToast({ title: this.$t('record.publishSuccess'), icon: 'success' });
+                setTimeout(() => {
+                    uni.navigateBack();
+                }, 1500);
+            } catch (e) {
+                console.error('Submit dream failed:', e);
+            } finally {
+                this.submitting = false;
+            }
         }
     }
 };
 </script>
 
 <style lang="scss" scoped>
-.record-page {
+.dream-record-page {
     min-height: 100vh;
-    background: #F8F9FE;
+    padding-bottom: 120rpx;
 }
 
-.page-header {
-    background: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
-    padding: calc(20rpx + env(safe-area-inset-top)) 32rpx 40rpx;
+.header-bar {
+    padding: 40rpx;
     text-align: center;
     
     .title {
-        font-size: 40rpx;
-        font-weight: 700;
-        color: #FFFFFF;
         display: block;
+        font-size: 40rpx;
+        color: #FFFFFF;
+        font-weight: bold;
+        margin-bottom: 12rpx;
     }
     
     .subtitle {
-        font-size: 26rpx;
+        font-size: 28rpx;
         color: rgba(255,255,255,0.7);
-        display: block;
-        margin-top: 8rpx;
     }
 }
 
-.form-container {
-    padding: 24rpx;
+.form-section {
+    padding: 0 32rpx;
 }
 
 .form-item {
-    background: #FFFFFF;
-    border-radius: 24rpx;
-    padding: 24rpx;
-    margin-bottom: 20rpx;
-    box-shadow: 0 2rpx 12rpx rgba(108, 92, 231, 0.06);
+    background: rgba(255,255,255,0.15);
+    border-radius: 16rpx;
+    padding: 24rpx 32rpx;
+    margin-bottom: 24rpx;
+    display: flex;
+    align-items: center;
     
     .label {
-        font-size: 26rpx;
-        color: #636E72;
-        margin-bottom: 12rpx;
-        display: block;
+        font-size: 30rpx;
+        color: #FFFFFF;
+        width: 160rpx;
+        flex-shrink: 0;
     }
     
-    .item-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        
-        .value {
-            flex: 1;
-            text-align: right;
-            font-size: 28rpx;
-            color: #2D3436;
-            margin: 0 16rpx;
-        }
-        
-        .arrow {
-            font-size: 32rpx;
-            color: #B2BEC3;
-        }
+    .value {
+        flex: 1;
+        font-size: 28rpx;
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .arrow {
+        font-size: 32rpx;
+        color: rgba(255,255,255,0.5);
     }
     
     .input {
-        width: 100%;
+        flex: 1;
         font-size: 28rpx;
-        color: #2D3436;
-        background: #F8F9FE;
-        border-radius: 12rpx;
-        padding: 16rpx;
+        color: #FFFFFF;
     }
     
     .textarea {
-        width: 100%;
-        min-height: 240rpx;
+        flex: 1;
         font-size: 28rpx;
-        color: #2D3436;
-        background: #F8F9FE;
-        border-radius: 12rpx;
-        padding: 16rpx;
-        line-height: 1.6;
+        color: #FFFFFF;
+        min-height: 200rpx;
     }
     
-    .char-count {
-        display: block;
-        text-align: right;
-        font-size: 22rpx;
-        color: #B2BEC3;
-        margin-top: 8rpx;
-    }
-}
-
-.clarity-picker {
-    display: flex;
-    gap: 16rpx;
-    
-    .clarity-item {
-        font-size: 48rpx;
-        color: #E0E0E0;
-        transition: color 0.2s;
-        
-        &.active {
-            color: #FDCB6E;
-        }
-    }
-}
-
-.image-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16rpx;
-    
-    .image-item {
-        position: relative;
-        width: 160rpx;
-        height: 160rpx;
-        
-        .preview-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 16rpx;
-        }
-        
-        .delete-btn {
-            position: absolute;
-            top: -8rpx;
-            right: -8rpx;
-            width: 36rpx;
-            height: 36rpx;
-            background: #E17055;
-            color: #FFFFFF;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 36rpx;
-            font-size: 24rpx;
-        }
-    }
-    
-    .upload-btn {
-        width: 160rpx;
-        height: 160rpx;
-        border: 2rpx dashed #D0D0D0;
-        border-radius: 16rpx;
+    .clarity-options {
         display: flex;
-        align-items: center;
-        justify-content: center;
+        gap: 20rpx;
         
-        .upload-icon {
+        .clarity-btn {
+            padding: 8rpx 24rpx;
+            border-radius: 24rpx;
+            font-size: 26rpx;
+            color: rgba(255,255,255,0.6);
+            border: 2rpx solid transparent;
+            &.active {
+                background: #6C5CE7;
+                color: #FFFFFF;
+                border-color: #FFFFFF;
+            }
+        }
+    }
+    
+    .image-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16rpx;
+        
+        .image-item {
+            position: relative;
+            width: 160rpx;
+            height: 160rpx;
+            
+            .preview-img {
+                width: 100%;
+                height: 100%;
+                border-radius: 12rpx;
+            }
+            
+            .delete-icon {
+                position: absolute;
+                top: -10rpx;
+                right: -10rpx;
+                width: 40rpx;
+                height: 40rpx;
+                background: rgba(0,0,0,0.6);
+                border-radius: 50%;
+                text-align: center;
+                line-height: 40rpx;
+                font-size: 24rpx;
+                color: #FFFFFF;
+            }
+        }
+        
+        .upload-btn {
+            width: 160rpx;
+            height: 160rpx;
+            border: 2rpx dashed rgba(255,255,255,0.5);
+            border-radius: 12rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 48rpx;
-            color: #B2BEC3;
+            color: rgba(255,255,255,0.6);
         }
     }
 }
 
-.submit-btn {
+.publish-btn {
     width: 100%;
+    height: 88rpx;
+    line-height: 88rpx;
+    background: #6C5CE7;
+    color: #FFFFFF;
+    font-size: 34rpx;
+    border-radius: 44rpx;
     margin-top: 40rpx;
-    font-size: 32rpx;
     letter-spacing: 4rpx;
+}
+
+.category-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: flex-end;
+    z-index: 100;
+    
+    .modal-content {
+        background: #FFFFFF;
+        border-radius: 24rpx 24rpx 0 0;
+        padding: 32rpx;
+        max-height: 60vh;
+        overflow-y: auto;
+        
+        .modal-title {
+            display: block;
+            text-align: center;
+            font-size: 34rpx;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 24rpx;
+        }
+        
+        .category-item {
+            padding: 24rpx;
+            border-bottom: 1rpx solid #EEE;
+            font-size: 30rpx;
+            color: #2C3E50;
+            
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
 }
 </style>

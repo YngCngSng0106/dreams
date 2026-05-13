@@ -108,6 +108,13 @@
                         "navigationBarTitleText": "注册",
                         "navigationStyle": "custom"
                     }
+                },
+                {
+                    "path": "forgot-password",
+                    "style": {
+                        "navigationBarTitleText": "重置密码",
+                        "navigationStyle": "custom"
+                    }
                 }
             ]
         }
@@ -120,30 +127,26 @@
         "backgroundTextStyle": "light"
     },
     "tabBar": {
+        "custom": true,
         "color": "#B2BEC3",
         "selectedColor": "#6C5CE7",
         "backgroundColor": "#FFFFFF",
         "borderStyle": "white",
         "list": [
             {
-                "pagePath": "pages/explore/explore",
-                "text": "探索"
+                "pagePath": "pages/explore/explore"
             },
             {
-                "pagePath": "pages/dream-record/dream-record",
-                "text": "记录"
+                "pagePath": "pages/dream-record/dream-record"
             },
             {
-                "pagePath": "pages/discussion/discussion",
-                "text": "讨论"
+                "pagePath": "pages/discussion/discussion"
             },
             {
-                "pagePath": "pages/message/message",
-                "text": "消息"
+                "pagePath": "pages/message/message"
             },
             {
-                "pagePath": "pages/mine/mine",
-                "text": "我的"
+                "pagePath": "pages/mine/mine"
             }
         ]
     }

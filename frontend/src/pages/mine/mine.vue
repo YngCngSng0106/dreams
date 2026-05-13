@@ -2,19 +2,22 @@
     <view class="mine-page">
         <!-- 头部信息 -->
         <view class="profile-header gradient-bg">
+            <view class="header-right">
+                <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中' }}</text>
+            </view>
             <view class="user-info" v-if="isLoggedIn">
                 <image class="avatar" :src="profile.avatar || '/static/default-avatar.png'" mode="aspectFill" @click="goProfile(myId)" />
                 <view class="info">
                     <text class="nickname">{{ profile.nickname }}</text>
-                    <text class="bio">{{ profile.bio || '这个人很懒，什么都没写' }}</text>
+                    <text class="bio">{{ profile.bio || $t('mine.lazyBio') }}</text>
                 </view>
                 <text class="settings-icon" @click="goSettings">⚙️</text>
             </view>
             <view class="user-info" v-else @click="goLogin">
                 <image class="avatar" src="/static/default-avatar.png" mode="aspectFill" />
                 <view class="info">
-                    <text class="nickname">点击登录</text>
-                    <text class="bio">登录后查看个人信息</text>
+                    <text class="nickname">{{ $t('mine.clickLogin') }}</text>
+                    <text class="bio">{{ $t('mine.afterLogin') }}</text>
                 </view>
             </view>
         </view>
@@ -23,22 +26,22 @@
         <view class="stats-card card" v-if="isLoggedIn">
             <view class="stat-item" @click="goMyDreams">
                 <text class="count">{{ profile.dreamCount || 0 }}</text>
-                <text class="label">梦境记录</text>
+                <text class="label">{{ $t('mine.dreamCount') }}</text>
             </view>
             <view class="stat-divider"></view>
             <view class="stat-item" @click="goMyDiscussions">
                 <text class="count">{{ profile.discussionCount || 0 }}</text>
-                <text class="label">讨论组</text>
+                <text class="label">{{ $t('mine.discussionCount') }}</text>
             </view>
             <view class="stat-divider"></view>
             <view class="stat-item">
                 <text class="count">{{ profile.followersCount || 0 }}</text>
-                <text class="label">粉丝</text>
+                <text class="label">{{ $t('mine.followers') }}</text>
             </view>
             <view class="stat-divider"></view>
             <view class="stat-item">
                 <text class="count">{{ profile.followingCount || 0 }}</text>
-                <text class="label">关注</text>
+                <text class="label">{{ $t('mine.following') }}</text>
             </view>
         </view>
         
@@ -46,37 +49,40 @@
         <view class="menu-section">
             <view class="menu-item" @click="goMyDreams" v-if="isLoggedIn">
                 <text class="menu-icon">💭</text>
-                <text class="menu-text">我的梦境</text>
+                <text class="menu-text">{{ $t('mine.myDreams') }}</text>
                 <text class="menu-arrow">›</text>
             </view>
             <view class="menu-item" @click="goNotifications" v-if="isLoggedIn">
                 <text class="menu-icon">🔔</text>
-                <text class="menu-text">通知</text>
+                <text class="menu-text">{{ $t('mine.notifications') }}</text>
                 <view class="menu-badge" v-if="unreadCount > 0">{{ unreadCount }}</view>
                 <text class="menu-arrow">›</text>
             </view>
             <view class="menu-item" @click="goSettings">
                 <text class="menu-icon">⚙️</text>
-                <text class="menu-text">设置</text>
+                <text class="menu-text">{{ $t('mine.settings') }}</text>
                 <text class="menu-arrow">›</text>
             </view>
             <view class="menu-item" @click="goStats" v-if="isLoggedIn">
                 <text class="menu-icon">📊</text>
-                <text class="menu-text">梦境统计</text>
+                <text class="menu-text">{{ $t('mine.stats') }}</text>
                 <text class="menu-arrow">›</text>
             </view>
         </view>
         
         <!-- 退出登录 -->
         <view class="logout-section" v-if="isLoggedIn">
-            <button class="logout-btn" @click="handleLogout">退出登录</button>
+            <button class="logout-btn" @click="handleLogout">{{ $t('mine.logout') }}</button>
         </view>
     </view>
+
+    <custom-tab-bar ref="tabbar" />
 </template>
 
 <script>
 import { userApi, notificationApi, statsApi } from '@/utils/api';
 import { isLoggedIn, clearAuth } from '@/utils/auth';
+import { setLocale } from '@/locale';
 
 export default {
     data() {
@@ -84,7 +90,8 @@ export default {
             isLoggedIn: false,
             profile: {},
             myId: null,
-            unreadCount: 0
+            unreadCount: 0,
+            currentLang: uni.getStorageSync('locale') || 'zh'
         };
     },
     onShow() {
@@ -93,8 +100,17 @@ export default {
             this.loadProfile();
             this.loadUnreadCount();
         }
+        this.$nextTick(() => {
+            const tabbar = this.$refs.tabbar;
+            if (tabbar) tabbar.updateCurrentPage();
+        });
     },
     methods: {
+        toggleLang() {
+            const next = this.currentLang === 'zh' ? 'en' : 'zh';
+            this.currentLang = next;
+            setLocale(next);
+        },
         async loadProfile() {
             try {
                 this.profile = await userApi.getMyProfile();
@@ -166,6 +182,19 @@ export default {
 
 .profile-header {
     padding: calc(80rpx + env(safe-area-inset-top)) 32rpx 48rpx;
+    position: relative;
+    
+    .header-right {
+        position: absolute;
+        top: calc(80rpx + env(safe-area-inset-top));
+        right: 32rpx;
+    }
+    
+    .lang-btn {
+        font-size: 28rpx;
+        color: rgba(255,255,255,0.8);
+        padding: 10rpx 20rpx;
+    }
     
     .user-info {
         display: flex;

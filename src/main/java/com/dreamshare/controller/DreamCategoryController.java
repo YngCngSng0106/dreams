@@ -24,6 +24,7 @@ public class DreamCategoryController {
             CategoryListResponse resp = new CategoryListResponse();
             resp.setId(c.getId());
             resp.setName(c.getName());
+            resp.setCode(c.getCode());
             resp.setIcon(c.getIcon());
             resp.setDescription(c.getDescription());
             return resp;

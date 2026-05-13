@@ -3,6 +3,8 @@ package com.dreamshare.controller;
 import com.dreamshare.dto.LoginRequest;
 import com.dreamshare.dto.LoginResponse;
 import com.dreamshare.dto.RegisterRequest;
+import com.dreamshare.dto.SendCodeRequest;
+import com.dreamshare.dto.ResetPasswordRequest;
 import com.dreamshare.service.AuthService;
 import com.dreamshare.utils.Result;
 import com.dreamshare.utils.JwtUtil;
@@ -40,5 +42,17 @@ public class AuthController {
             token = token.substring(7);
         }
         return Result.ok(jwtUtil.validateToken(token));
+    }
+
+    @PostMapping("/send-code")
+    public Result<Void> sendCode(@Valid @RequestBody SendCodeRequest req) {
+        authService.sendVerificationCode(req.getEmail());
+        return Result.ok();
+    }
+
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req.getEmail(), req.getCode(), req.getPassword());
+        return Result.ok();
     }
 }

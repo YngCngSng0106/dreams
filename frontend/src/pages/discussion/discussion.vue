@@ -3,16 +3,16 @@
         <!-- 自定义导航栏 -->
         <view class="navbar" :style="{height: statusBarHeight + 88 + 'rpx'}">
             <view class="navbar-content" :style="{paddingTop: statusBarHeight + 'rpx'}">
-                <text class="title">讨论社区</text>
-                <view class="create-btn" @click="createDiscussion">+ 创建</view>
+                <text class="title">{{ $t('discussion.title') }}</text>
+                <view class="create-btn" @click="createDiscussion">+ {{ $t('discussion.create') }}</view>
             </view>
         </view>
         
         <!-- Tab切换 -->
         <view class="tab-bar" :style="{marginTop: (statusBarHeight + 88) + 'rpx'}">
-            <view class="tab-item" :class="{active: currentTab === 'all'}" @click="currentTab = 'all'">全部</view>
-            <view class="tab-item" :class="{active: currentTab === 'mine'}" @click="currentTab = 'mine'">我的</view>
-            <view class="tab-item" :class="{active: currentTab === 'recommended'}" @click="currentTab = 'recommended'">推荐</view>
+            <view class="tab-item" :class="{active: currentTab === 'all'}" @click="currentTab = 'all'">{{ $t('discussion.all') }}</view>
+            <view class="tab-item" :class="{active: currentTab === 'mine'}" @click="currentTab = 'mine'">{{ $t('discussion.mine') }}</view>
+            <view class="tab-item" :class="{active: currentTab === 'recommended'}" @click="currentTab = 'recommended'">{{ $t('discussion.recommended') }}</view>
         </view>
         
         <!-- 讨论组列表 -->
@@ -21,7 +21,7 @@
                 <image class="cover" :src="disc.coverImage || '/static/default-cover.png'" mode="aspectFill" v-if="disc.coverImage" />
                 <view class="info">
                     <text class="title">{{ disc.title }}</text>
-                    <text class="desc">{{ disc.description || '暂无描述' }}</text>
+                    <text class="desc">{{ disc.description || $t('discussion.noDesc') }}</text>
                     <view class="meta">
                         <text class="creator">{{ disc.creatorNickname }}</text>
                         <text class="members">👥 {{ disc.memberCount }}人</text>
@@ -31,13 +31,15 @@
             
             <view class="empty-state" v-if="discussions.length === 0 && !loading">
                 <text class="empty-icon">💬</text>
-                <text class="empty-text">暂无讨论组</text>
+                <text class="empty-text">{{ $t('discussion.empty') }}</text>
             </view>
         </scroll-view>
         
         <!-- 创建按钮 -->
         <view class="fab-btn" @click="createDiscussion">+</view>
     </view>
+
+    <custom-tab-bar ref="tabbar" />
 </template>
 
 <script>
@@ -66,6 +68,10 @@ export default {
             this.discussions = [];
             this.loadDiscussions();
         }
+        this.$nextTick(() => {
+            const tabbar = this.$refs.tabbar;
+            if (tabbar) tabbar.updateCurrentPage();
+        });
     },
     methods: {
         async loadDiscussions() {

@@ -19,6 +19,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
                         "/api/auth/login",
                         "/api/auth/register",
                         "/api/auth/verify",
+                        "/api/auth/send-code",
+                        "/api/auth/reset-password",
                         "/api/categories/**",
                         "/api/dreams/feed",
                         "/api/dreams/{id}",
