@@ -11,4 +11,6 @@ public class AuditKeyword {
     private String keyword;
     private String keywordType;
     private String severity;
+    @TableLogic
+    private Integer isDeleted;
 }

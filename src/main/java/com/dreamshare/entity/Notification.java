@@ -15,6 +15,8 @@ public class Notification {
     private Long relatedId;
     private String content;
     private Boolean isRead;
+    @TableLogic
+    private Integer isDeleted;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

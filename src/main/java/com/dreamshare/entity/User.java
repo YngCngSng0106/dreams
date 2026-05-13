@@ -16,6 +16,8 @@ public class User {
     private String email;
     private Integer gender;
     private String bio;
+    private Integer role; // 0=user, 1=admin
+    private Integer isBanned; // 0=normal, 1=banned
     @TableLogic
     private Integer isDeleted;
     @TableField(fill = FieldFill.INSERT)

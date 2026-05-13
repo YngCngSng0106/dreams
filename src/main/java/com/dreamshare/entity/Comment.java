@@ -14,6 +14,7 @@ public class Comment {
     private Long parentId;
     private String content;
     private Integer likeCount;
+    private Integer isHidden; // 0=visible, 1=hidden
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableLogic

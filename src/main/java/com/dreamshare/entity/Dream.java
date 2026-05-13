@@ -20,6 +20,7 @@ public class Dream {
     private Boolean isRecurring;
     private String tags;
     private String images;
+    private Integer isPinned; // 0=not pinned, 1=pinned
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

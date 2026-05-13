@@ -13,4 +13,6 @@ public class DreamCategory {
     private String icon;
     private String description;
     private Integer sortOrder;
+    @TableLogic
+    private Integer isDeleted;
 }

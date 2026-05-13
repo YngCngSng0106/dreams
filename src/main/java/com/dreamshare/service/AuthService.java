@@ -37,10 +37,12 @@ public class AuthService {
         if (user == null) throw new RuntimeException("用户不存在");
         String md5Pass = DigestUtils.md5DigestAsHex(req.getPassword().getBytes(StandardCharsets.UTF_8));
         if (!user.getPassword().equals(md5Pass)) throw new RuntimeException("密码错误");
+        if (user.getIsBanned() != null && user.getIsBanned() == 1) throw new RuntimeException("账号已被封禁，无法登录");
 
         LoginResponse resp = new LoginResponse();
         resp.setToken(jwtUtil.generateToken(user.getId()));
         resp.setUserId(user.getId());
+        resp.setRole(user.getRole());
         return resp;
     }
 
@@ -56,6 +58,8 @@ public class AuthService {
         user.setEmail(req.getEmail());
         user.setGender(0);
         user.setBio("");
+        user.setRole(0);
+        user.setIsBanned(0);
         user.setIsDeleted(0);
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
@@ -71,6 +75,7 @@ public class AuthService {
         LoginResponse resp = new LoginResponse();
         resp.setToken(jwtUtil.generateToken(user.getId()));
         resp.setUserId(user.getId());
+        resp.setRole(user.getRole());
         return resp;
     }
 
