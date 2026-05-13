@@ -59,8 +59,8 @@
       <el-table-column prop="remark" label="备注" min-width="160">
         <template #default="{ row }">{{ row.remark || '-' }}</template>
       </el-table-column>
-      <el-table-column prop="createdAt" label="时间" width="180">
-        <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+      <el-table-column prop="createTime" label="时间" width="180">
+        <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
       </el-table-column>
     </el-table>
 
@@ -108,8 +108,8 @@ const fetchData = async () => {
         operation: searchForm.operation !== '' ? searchForm.operation : undefined
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取操作日志失败')
   } finally {

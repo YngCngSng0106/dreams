@@ -37,8 +37,8 @@
           <el-tag :type="row.isRead ? 'info' : 'warning'">{{ row.isRead ? '已读' : '未读' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="createdAt" label="时间" width="180">
-        <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+      <el-table-column prop="createTime" label="时间" width="180">
+        <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="100" fixed="right">
         <template #default="{ row }">
@@ -119,8 +119,8 @@ const fetchData = async () => {
         type: searchForm.type !== '' ? searchForm.type : undefined
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取通知列表失败')
   } finally {

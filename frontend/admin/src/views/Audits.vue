@@ -106,8 +106,8 @@ const fetchData = async () => {
         targetType: searchForm.targetType !== '' ? searchForm.targetType : undefined
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取审核列表失败')
   } finally {

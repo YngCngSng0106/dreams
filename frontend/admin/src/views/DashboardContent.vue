@@ -77,8 +77,8 @@
         </el-table-column>
         <el-table-column prop="targetName" label="目标" min-width="140" />
         <el-table-column prop="remark" label="备注" min-width="140" />
-        <el-table-column prop="createdAt" label="时间" width="180">
-          <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+        <el-table-column prop="createTime" label="时间" width="180">
+          <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
       </el-table>
     </el-card>

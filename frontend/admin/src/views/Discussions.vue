@@ -22,8 +22,8 @@
       </el-table-column>
       <el-table-column prop="creatorId" label="创建者ID" width="120" />
       <el-table-column prop="memberCount" label="成员数" width="100" />
-      <el-table-column prop="createdAt" label="创建时间" width="180">
-        <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+      <el-table-column prop="createTime" label="创建时间" width="180">
+        <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
@@ -85,8 +85,8 @@ const fetchData = async () => {
         keyword: searchForm.keyword
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取讨论组列表失败')
   } finally {

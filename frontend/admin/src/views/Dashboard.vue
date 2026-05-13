@@ -5,55 +5,18 @@
       <div class="sidebar-logo">
         <h2>Dreams Admin</h2>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        class="sidebar-menu"
-        background-color="#6C5CE7"
-        text-color="rgba(255,255,255,0.7)"
-        active-text-color="#ffffff"
-        router
-      >
-        <el-menu-item index="/dashboard">
-          <el-icon><Odometer /></el-icon>
-          <span>控制台</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/users">
-          <el-icon><User /></el-icon>
-          <span>用户管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/dreams">
-          <el-icon><MoonNight /></el-icon>
-          <span>梦境管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/categories">
-          <el-icon><FolderOpened /></el-icon>
-          <span>分类管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/discussions">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>讨论组管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/comments">
-          <el-icon><Comment /></el-icon>
-          <span>评论管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/audits">
-          <el-icon><Checked /></el-icon>
-          <span>内容审核</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/notifications">
-          <el-icon><Bell /></el-icon>
-          <span>通知管理</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/keywords">
-          <el-icon><Search /></el-icon>
-          <span>审核关键词</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/logs">
-          <el-icon><Document /></el-icon>
-          <span>操作日志</span>
-        </el-menu-item>
-      </el-menu>
+      <div class="sidebar-menu">
+        <div
+          v-for="item in menuItems"
+          :key="item.path"
+          class="menu-item"
+          :class="{ active: activeMenu === item.index }"
+          @click="navigate(item.path)"
+        >
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.title }}</span>
+        </div>
+      </div>
     </el-aside>
 
     <el-container class="main-container">
@@ -68,9 +31,8 @@
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="admin-info">
-              <el-icon><User /></el-icon>
               <span class="admin-name">{{ adminName }}</span>
-              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              <span class="arrow">▼</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -90,32 +52,50 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
+provide('router', router)
+
+const menuItems = [
+  { index: 'dashboard', path: '/dashboard', title: '控制台', icon: '📊' },
+  { index: 'users', path: '/dashboard/users', title: '用户管理', icon: '👤' },
+  { index: 'dreams', path: '/dashboard/dreams', title: '梦境管理', icon: '🌙' },
+  { index: 'categories', path: '/dashboard/categories', title: '分类管理', icon: '📁' },
+  { index: 'discussions', path: '/dashboard/discussions', title: '讨论组管理', icon: '💬' },
+  { index: 'comments', path: '/dashboard/comments', title: '评论管理', icon: '✏️' },
+  { index: 'audits', path: '/dashboard/audits', title: '内容审核', icon: '✅' },
+  { index: 'notifications', path: '/dashboard/notifications', title: '通知管理', icon: '🔔' },
+  { index: 'keywords', path: '/dashboard/keywords', title: '审核关键词', icon: '🔍' },
+  { index: 'logs', path: '/dashboard/logs', title: '操作日志', icon: '📋' },
+]
 
 const adminName = computed(() => {
   try {
     const user = JSON.parse(localStorage.getItem('admin_user') || '{}')
     return user.username || '管理员'
-  } catch {
+  } catch (e) {
     return '管理员'
   }
 })
 
 const activeMenu = computed(() => {
   const path = route.path
-  if (path === '/dashboard' || path === '/') return '/dashboard'
-  return path
+  if (path === '/dashboard' || path === '/') return 'dashboard'
+  return path.replace('/dashboard/', '')
 })
 
 const currentTitle = computed(() => {
   const matched = route.matched[1]
   return matched?.meta?.title || '控制台'
 })
+
+const navigate = (path) => {
+  router.push(path)
+}
 
 const handleCommand = (command) => {
   if (command === 'logout') {
@@ -155,7 +135,37 @@ const handleCommand = (command) => {
   }
 
   .sidebar-menu {
-    border-right: none;
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      height: 50px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      transition: all 0.2s;
+
+      .menu-icon {
+        margin-right: 12px;
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+      }
+
+      .menu-text {
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      &.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #fff;
+      }
+    }
   }
 }
 
@@ -185,7 +195,12 @@ const handleCommand = (command) => {
       color: #333;
 
       .admin-name {
-        margin: 0 4px;
+        margin-right: 4px;
+      }
+
+      .arrow {
+        font-size: 10px;
+        color: #999;
       }
     }
   }

@@ -34,8 +34,8 @@
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="createdAt" label="日期" width="180">
-        <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+      <el-table-column prop="createTime" label="日期" width="180">
+        <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
@@ -59,7 +59,7 @@
         <p><strong>分类：</strong>{{ currentDetail.categoryName || currentDetail.category?.name || '-' }}</p>
         <p><strong>描述：</strong>{{ currentDetail.description }}</p>
         <p><strong>作者ID：</strong>{{ currentDetail.userId }}</p>
-        <p><strong>创建时间：</strong>{{ formatDate(currentDetail.createdAt) }}</p>
+        <p><strong>创建时间：</strong>{{ formatDate(currentDetail.createTime) }}</p>
         <p><strong>置顶：</strong>{{ currentDetail.isPinned ? '是' : '否' }}</p>
         <p><strong>状态：</strong>{{ currentDetail.status || '-' }}</p>
       </div>
@@ -109,8 +109,8 @@ const fetchData = async () => {
         userId: searchForm.userId || undefined
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取梦境列表失败')
   } finally {

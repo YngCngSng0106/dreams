@@ -24,8 +24,8 @@
       <el-table-column prop="username" label="用户名" width="140" />
       <el-table-column prop="nickname" label="昵称" width="140" />
       <el-table-column prop="email" label="邮箱" width="200" />
-      <el-table-column prop="createdAt" label="注册时间" width="180">
-        <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+      <el-table-column prop="createTime" label="注册时间" width="180">
+        <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
       </el-table-column>
       <el-table-column prop="isBanned" label="状态" width="100">
         <template #default="{ row }">
@@ -75,8 +75,8 @@ const fetchData = async () => {
         isBanned: searchForm.isBanned !== '' ? searchForm.isBanned : undefined
       }
     })
-    tableData.value = data.content || data.list || data || []
-    pagination.total = data.totalElements || data.total || 0
+    tableData.value = data.records || data.content || data.list || []
+    pagination.total = data.total || data.totalElements || 0
   } catch (err) {
     ElMessage.error('获取用户列表失败')
   } finally {
