@@ -76,6 +76,9 @@ const zh = {
         keywords: '关键词',
         keywordsPlaceholder: '用逗号分隔多个关键词',
         clarity: '清晰度',
+        low: '低',
+        mid: '中',
+        high: '高',
         description: '梦境描述',
         descriptionPlaceholder: '详细描述你的梦境...',
         isRecurring: '这是重复的梦吗？',
@@ -83,7 +86,8 @@ const zh = {
         publish: '发布梦境',
         fillDesc: '请填写梦境描述',
         selectType: '请选择梦境类型',
-        publishSuccess: '发布成功'
+        publishSuccess: '发布成功',
+        cancel: '取消'
     },
     discussion: {
         title: '讨论社区',
@@ -368,6 +372,9 @@ const en = {
         keywords: 'Keywords',
         keywordsPlaceholder: 'Comma separated keywords',
         clarity: 'Clarity',
+        low: 'Low',
+        mid: 'Mid',
+        high: 'High',
         description: 'Description',
         descriptionPlaceholder: 'Describe your dream...',
         isRecurring: 'Is this a recurring dream?',
@@ -375,7 +382,8 @@ const en = {
         publish: 'Publish Dream',
         fillDesc: 'Please fill in description',
         selectType: 'Please select dream type',
-        publishSuccess: 'Published'
+        publishSuccess: 'Published',
+        cancel: 'Cancel'
     },
     discussion: {
         title: 'Discussion',

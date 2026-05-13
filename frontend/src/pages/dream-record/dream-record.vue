@@ -3,56 +3,69 @@
         <view class="header-bar">
             <text class="title">{{ $t('record.title') }}</text>
             <text class="subtitle">{{ $t('record.subtitle') }}</text>
+            <view class="lang-switch">
+                <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中' }}</text>
+            </view>
         </view>
         
         <view class="form-section">
-            <view class="form-item">
+            <!-- 梦境类型 - 加@click打开弹窗 -->
+            <view class="form-item picker-row" @click="openCategoryPicker">
                 <text class="label">{{ $t('record.dreamType') }}</text>
                 <text class="value">{{ currentCategory || $t('record.pleaseSelect') }}</text>
                 <text class="arrow">›</text>
             </view>
             
-            <view class="form-item" @click="pickDate">
+            <!-- 做梦日期 - 用picker组件 -->
+            <view class="form-item picker-row">
                 <text class="label">{{ $t('record.dreamDate') }}</text>
-                <text class="value">{{ dreamDate || $t('record.pleaseSelect') }}</text>
+                <picker mode="date" :start="dateStart" :end="dateEnd" :value="dreamDate" @change="onDateChange">
+                    <text class="value">{{ dreamDate || $t('record.pleaseSelect') }}</text>
+                </picker>
                 <text class="arrow">›</text>
             </view>
             
+            <!-- 发生地点 -->
             <view class="form-item">
                 <text class="label">{{ $t('record.location') }}</text>
-                <input class="input" v-model="location" :placeholder="$t('record.locationPlaceholder')" />
+                <input class="input" v-model="location" :placeholder="$t('record.locationPlaceholder')" placeholder-class="input-placeholder" />
             </view>
             
+            <!-- 关键词 -->
             <view class="form-item">
                 <text class="label">{{ $t('record.keywords') }}</text>
-                <input class="input" v-model="keywords" :placeholder="$t('record.keywordsPlaceholder')" />
+                <input class="input" v-model="keywords" :placeholder="$t('record.keywordsPlaceholder')" placeholder-class="input-placeholder" />
             </view>
             
+            <!-- 清晰度 -->
             <view class="form-item">
                 <text class="label">{{ $t('record.clarity') }}</text>
                 <view class="clarity-options">
-                    <text class="clarity-btn" :class="{active: clarity===1}" @click="clarity=1">低</text>
-                    <text class="clarity-btn" :class="{active: clarity===2}" @click="clarity=2">中</text>
-                    <text class="clarity-btn" :class="{active: clarity===3}" @click="clarity=3">高</text>
+                    <text class="clarity-btn" :class="{active: clarity===1}" @click.stop="clarity=1">{{ $t('record.low') }}</text>
+                    <text class="clarity-btn" :class="{active: clarity===2}" @click.stop="clarity=2">{{ $t('record.mid') }}</text>
+                    <text class="clarity-btn" :class="{active: clarity===3}" @click.stop="clarity=3">{{ $t('record.high') }}</text>
                 </view>
             </view>
             
+            <!-- 梦境描述 -->
             <view class="form-item">
                 <text class="label">{{ $t('record.description') }}</text>
                 <textarea class="textarea" v-model="description" :placeholder="$t('record.descriptionPlaceholder')" maxlength="2000" />
             </view>
             
+            <!-- 重复梦 -->
             <view class="form-item">
                 <text class="label">{{ $t('record.isRecurring') }}</text>
                 <switch :checked="isRecurring" @change="isRecurring=$event.detail.value" color="#6C5CE7" />
             </view>
             
+            <!-- 上传图片 -->
             <view class="form-item" v-if="imageList.length > 0 || imageList.length < 3">
                 <text class="label">{{ $t('record.uploadImage') }}</text>
                 <view class="image-list">
                     <view class="image-item" v-for="(img, index) in imageList" :key="index">
                         <image :src="img" mode="aspectFill" class="preview-img" />
-                        <text class="delete-icon" @click="imageList.splice(index,1)">✕</text>
+                        <text class="delete-icon" @click.stop="imageList.splice(index,1)">✕</text>
                     </view>
                     <view class="upload-btn" v-if="imageList.length < 3" @click="uploadImage">+</view>
                 </view>
@@ -63,12 +76,15 @@
             </button>
         </view>
         
+        <!-- 分类选择弹窗 -->
         <view class="category-modal" v-if="showCategory" @click="showCategory=false">
             <view class="modal-content" @click.stop>
-                <text class="modal-title">选择梦境类型</text>
+                <text class="modal-title">{{ $t('record.dreamType') }}</text>
                 <view class="category-item" v-for="cat in categories" :key="cat.id" @click="selectCategory(cat)">
-                    <text>{{ cat.name }}</text>
+                    <text class="cat-icon">{{ cat.icon || '🔮' }}</text>
+                    <text class="cat-name">{{ cat.name }}</text>
                 </view>
+                <view class="modal-close" @click="showCategory=false">{{ $t('record.cancel') }}</view>
             </view>
         </view>
     </view>
@@ -83,10 +99,14 @@ import { setLocale } from '@/locale';
 
 export default {
     data() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
         return {
             dreamType: '',
             currentCategory: '',
-            dreamDate: '',
+            dreamDate: `${yyyy}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,
+            dateStart: `${yyyy-1}-01-01`,
+            dateEnd: `${yyyy+1}-12-31`,
             location: '',
             keywords: '',
             clarity: 2,
@@ -120,14 +140,17 @@ export default {
                 this.categories = await categoryApi.list();
                 if (this.categories.length > 0) {
                     this.currentCategory = this.categories[0].name;
+                    this.dreamType = String(this.categories[0].id);
                 }
             } catch (e) {
                 console.error('Load categories failed:', e);
             }
         },
-        pickDate() {
-            const d = new Date();
-            this.dreamDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        openCategoryPicker() {
+            this.showCategory = true;
+        },
+        onDateChange(e) {
+            this.dreamDate = e.detail.value;
         },
         selectCategory(cat) {
             this.currentCategory = cat.name;
@@ -186,6 +209,21 @@ export default {
 .header-bar {
     padding: 40rpx;
     text-align: center;
+    position: relative;
+    
+    .lang-switch {
+        position: absolute;
+        top: 20rpx;
+        right: 20rpx;
+    }
+    
+    .lang-btn {
+        font-size: 24rpx;
+        color: rgba(255,255,255,0.8);
+        background: rgba(255,255,255,0.15);
+        padding: 8rpx 16rpx;
+        border-radius: 12rpx;
+    }
     
     .title {
         display: block;
@@ -242,6 +280,9 @@ export default {
         font-size: 28rpx;
         color: #FFFFFF;
         min-height: 200rpx;
+        &::placeholder {
+            color: rgba(255,255,255,0.45);
+        }
     }
     
     .clarity-options {
@@ -257,7 +298,7 @@ export default {
             &.active {
                 background: #6C5CE7;
                 color: #FFFFFF;
-                border-color: #FFFFFF;
+                border-color: rgba(255,255,255,0.5);
             }
         }
     }
@@ -311,12 +352,13 @@ export default {
     width: 100%;
     height: 88rpx;
     line-height: 88rpx;
-    background: #6C5CE7;
+    background: rgba(108, 92, 231, 0.9);
     color: #FFFFFF;
     font-size: 34rpx;
     border-radius: 44rpx;
     margin-top: 40rpx;
     letter-spacing: 4rpx;
+    border: none;
 }
 
 .category-modal {
@@ -336,6 +378,7 @@ export default {
         padding: 32rpx;
         max-height: 60vh;
         overflow-y: auto;
+        width: 100%;
         
         .modal-title {
             display: block;
@@ -347,15 +390,39 @@ export default {
         }
         
         .category-item {
-            padding: 24rpx;
-            border-bottom: 1rpx solid #EEE;
-            font-size: 30rpx;
-            color: #2C3E50;
+            display: flex;
+            align-items: center;
+            padding: 20rpx 16rpx;
+            border-bottom: 1rpx solid #F0F0F0;
+            
+            .cat-icon {
+                font-size: 40rpx;
+                margin-right: 16rpx;
+            }
+            
+            .cat-name {
+                font-size: 30rpx;
+                color: #2C3E50;
+            }
             
             &:last-child {
                 border-bottom: none;
             }
         }
+        
+        .modal-close {
+            text-align: center;
+            padding: 24rpx;
+            margin-top: 16rpx;
+            font-size: 28rpx;
+            color: #6C5CE7;
+            background: rgba(108, 92, 231, 0.08);
+            border-radius: 16rpx;
+        }
     }
+}
+
+.input-placeholder {
+    color: rgba(255,255,255,0.45) !important;
 }
 </style>
