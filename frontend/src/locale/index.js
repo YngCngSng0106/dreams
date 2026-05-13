@@ -597,6 +597,7 @@ const i18n = createI18n({
 export function setLocale(lang) {
     i18n.global.locale.value = lang;
     uni.setStorageSync('locale', lang);
+    uni.$emit('localeChange', lang);
 }
 
 export { zh, en };

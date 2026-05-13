@@ -26,9 +26,6 @@ export default {
             locale: uni.getStorageSync('locale') || 'zh'
         };
     },
-    watch: {
-        locale() {}
-    },
     methods: {
         t(key) {
             const msgs = i18nMessages[this.locale];
@@ -52,10 +49,23 @@ export default {
             if (current) {
                 this.currentPage = current.route;
             }
+            // Also refresh locale in case it changed
+            this.locale = uni.getStorageSync('locale') || 'zh';
+        },
+        onLocaleChange() {
+            this.locale = uni.getStorageSync('locale') || 'zh';
         }
     },
     mounted() {
         this.updateCurrentPage();
+        // Listen for global language change event
+        const that = this;
+        uni.$on('localeChange', () => {
+            that.onLocaleChange();
+        });
+    },
+    beforeDestroy() {
+        uni.$off('localeChange');
     }
 };
 </script>
