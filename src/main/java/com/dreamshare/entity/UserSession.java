@@ -10,5 +10,5 @@ public class UserSession {
     private Long id;
     private Long userId;
     private String sessionId;
-    private Boolean onlineStatus;
+    private Integer onlineStatus;
 }

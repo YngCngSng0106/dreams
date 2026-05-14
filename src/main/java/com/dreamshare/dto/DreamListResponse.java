@@ -14,7 +14,7 @@ public class DreamListResponse {
     private String keywords;
     private Integer clarity;
     private String description;
-    private Boolean isRecurring;
+    private Integer isRecurring;
     private String tags;
     private Integer likeCount;
     private LocalDateTime createTime;

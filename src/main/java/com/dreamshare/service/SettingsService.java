@@ -26,8 +26,8 @@ public class SettingsService {
         UserSettings settings = userSettingsMapper.selectOne(wrapper);
         if (settings == null) {
             SettingsResponse resp = new SettingsResponse();
-            resp.setPushEnabled(true);
-            resp.setIsAnonymousEnabled(false);
+            resp.setPushEnabled(1);
+            resp.setIsAnonymousEnabled(0);
             return resp;
         }
         SettingsResponse resp = new SettingsResponse();
@@ -43,8 +43,8 @@ public class SettingsService {
         if (settings == null) {
             settings = new UserSettings();
             settings.setUserId(userId);
-            settings.setPushEnabled(true);
-            settings.setIsAnonymousEnabled(false);
+            settings.setPushEnabled(1);
+            settings.setIsAnonymousEnabled(0);
         }
         if (req.getPushEnabled() != null) settings.setPushEnabled(req.getPushEnabled());
         if (req.getIsAnonymousEnabled() != null) settings.setIsAnonymousEnabled(req.getIsAnonymousEnabled());

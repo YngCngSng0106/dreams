@@ -124,8 +124,8 @@ public class AuthService {
         // 初始化用户设置
         UserSettings settings = new UserSettings();
         settings.setUserId(user.getId());
-        settings.setPushEnabled(true);
-        settings.setIsAnonymousEnabled(false);
+        settings.setPushEnabled(1);
+        settings.setIsAnonymousEnabled(0);
         userSettingsMapper.insert(settings);
 
         LoginResponse resp = new LoginResponse();

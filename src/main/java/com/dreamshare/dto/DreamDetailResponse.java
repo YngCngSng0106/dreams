@@ -14,7 +14,7 @@ public class DreamDetailResponse {
     private String keywords;
     private Integer clarity;
     private String description;
-    private Boolean isRecurring;
+    private Integer isRecurring;
     private String tags;
     private String images;
     private Integer likeCount;

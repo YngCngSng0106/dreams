@@ -10,7 +10,7 @@ public class DreamCreateRequest {
     private String keywords;
     private Integer clarity;
     @NotBlank private String description;
-    private Boolean isRecurring;
+    private Integer isRecurring;
     private String tags;
     private String images;
 }

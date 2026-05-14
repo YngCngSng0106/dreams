@@ -9,6 +9,6 @@ public class UserSettings {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long userId;
-    private Boolean pushEnabled;
-    private Boolean isAnonymousEnabled;
+    private Integer pushEnabled;
+    private Integer isAnonymousEnabled;
 }
