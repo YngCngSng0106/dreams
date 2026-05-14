@@ -198,7 +198,8 @@ export default {
             if (this.loading || !this.hasMore) return;
             this.loading = true;
             try {
-                const res = await dreamApi.feed(this.page, this.pageSize);
+                const catId = this.selectedCategory === 0 ? null : this.selectedCategory;
+                const res = await dreamApi.feed(this.page, this.pageSize, 'newest', catId);
                 this.dreams = this.dreams.concat(res.records || []);
                 this.page++;
                 if (!res.records || res.records.length < this.pageSize) {

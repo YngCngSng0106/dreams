@@ -32,8 +32,11 @@ export const dreamApi = {
         if (isRecurring != null) url += '&isRecurring=' + isRecurring;
         return request({ url });
     },
-    feed: (page = 1, pageSize = 20, sortBy = 'newest') => 
-        request({ url: '/api/dreams/feed?page=' + page + '&pageSize=' + pageSize + '&sortBy=' + sortBy }),
+    feed: (page = 1, pageSize = 20, sortBy = 'newest', categoryId) => {
+        let url = '/api/dreams/feed?page=' + page + '&pageSize=' + pageSize + '&sortBy=' + sortBy;
+        if (categoryId != null) url += '&categoryId=' + categoryId;
+        return request({ url });
+    },
     similar: (dreamId, limit = 10) => 
         request({ url: '/api/dreams/' + dreamId + '/similar?limit=' + limit }),
     like: (dreamId) => request({ url: '/api/dreams/' + dreamId + '/like', method: 'POST' }),

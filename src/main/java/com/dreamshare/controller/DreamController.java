@@ -53,8 +53,9 @@ public class DreamController {
     @GetMapping("/feed")
     public Result<Page<DreamListResponse>> feed(@RequestParam(defaultValue = "1") int page,
                                                  @RequestParam(defaultValue = "20") int pageSize,
-                                                 @RequestParam(defaultValue = "newest") String sortBy) {
-        return Result.ok(dreamService.getFeed(page, pageSize, sortBy));
+                                                 @RequestParam(defaultValue = "newest") String sortBy,
+                                                 @RequestParam(required = false) Long categoryId) {
+        return Result.ok(dreamService.getFeed(page, pageSize, sortBy, categoryId));
     }
 
     @GetMapping("/{dreamId}/similar")

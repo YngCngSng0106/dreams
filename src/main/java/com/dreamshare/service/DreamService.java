@@ -98,9 +98,12 @@ public class DreamService {
         return convertToListPage(dreamPage);
     }
 
-    public Page<DreamListResponse> getFeed(int page, int pageSize, String sortBy) {
+    public Page<DreamListResponse> getFeed(int page, int pageSize, String sortBy, Long categoryId) {
         LambdaQueryWrapper<Dream> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Dream::getIsDeleted, 0);
+        if (categoryId != null) {
+            wrapper.eq(Dream::getCategoryId, categoryId);
+        }
         if ("popular".equals(sortBy)) {
             wrapper.orderByDesc(Dream::getCreateTime);  // 简化：实际需用子查询按点赞数排序
         } else {
