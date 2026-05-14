@@ -22,6 +22,14 @@ public class DiscussionController {
         return Result.ok(discussionService.createDiscussion(userId, req));
     }
 
+    @GetMapping
+    public Result<Page<DiscussionListResponse>> list(@RequestParam(defaultValue = "1") int page,
+                                                      @RequestParam(defaultValue = "20") int pageSize,
+                                                      @RequestParam(required = false) String type,
+                                                      @RequestParam(required = false) String keyword) {
+        return Result.ok(discussionService.getDiscussions(page, pageSize, type, keyword));
+    }
+
     @GetMapping("/{discussionId}")
     public Result<DiscussionDetailResponse> detail(@PathVariable Long discussionId) {
         return Result.ok(discussionService.getDiscussionDetail(discussionId));
@@ -40,19 +48,18 @@ public class DiscussionController {
         return Result.ok();
     }
 
-    @GetMapping
-    public Result<Page<DiscussionListResponse>> list(@RequestParam(defaultValue = "1") int page,
-                                                      @RequestParam(defaultValue = "20") int pageSize,
-                                                      @RequestParam(required = false) String type,
-                                                      @RequestParam(required = false) String keyword) {
-        return Result.ok(discussionService.getDiscussions(page, pageSize, type, keyword));
-    }
-
     @GetMapping("/my")
     public Result<Page<DiscussionListResponse>> myList(@RequestAttribute Long userId,
                                                         @RequestParam(defaultValue = "1") int page,
                                                         @RequestParam(defaultValue = "20") int pageSize) {
         return Result.ok(discussionService.getMyDiscussions(userId, page, pageSize));
+    }
+
+    @GetMapping("/recommended")
+    public Result<Page<DiscussionListResponse>> recommended(@RequestAttribute Long userId,
+                                                             @RequestParam(defaultValue = "1") int page,
+                                                             @RequestParam(defaultValue = "20") int pageSize) {
+        return Result.ok(discussionService.getRecommendedDiscussions(userId, page, pageSize));
     }
 
     @GetMapping("/{discussionId}/members")
@@ -79,12 +86,5 @@ public class DiscussionController {
                                 @RequestBody DiscussionJoinRequest req) {
         discussionService.inviteUser(userId, discussionId, req.getUserId());
         return Result.ok();
-    }
-
-    @GetMapping("/recommended")
-    public Result<Page<DiscussionListResponse>> recommended(@RequestAttribute Long userId,
-                                                             @RequestParam(defaultValue = "1") int page,
-                                                             @RequestParam(defaultValue = "20") int pageSize) {
-        return Result.ok(discussionService.getRecommendedDiscussions(userId, page, pageSize));
     }
 }

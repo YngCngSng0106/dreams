@@ -19,11 +19,11 @@ public class NotificationService {
     @Autowired private UserMapper userMapper;
     @Autowired private SimpMessagingTemplate messagingTemplate;
 
-    public Page<NotificationResponse> getNotifications(Long userId, int page, int pageSize, String type, Boolean isRead) {
+    public Page<NotificationResponse> getNotifications(Long userId, int page, int pageSize, String type, Integer isRead) {
         LambdaQueryWrapper<Notification> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Notification::getUserId, userId);
         if (type != null) wrapper.eq(Notification::getType, type);
-        if (isRead != null) wrapper.eq(Notification::getIsRead, isRead ? 1 : 0);
+        if (isRead != null) wrapper.eq(Notification::getIsRead, isRead);
         wrapper.orderByDesc(Notification::getCreateTime);
         Page<Notification> nPage = notificationMapper.selectPage(new Page<>(page, pageSize), wrapper);
         return convertToResponsePage(nPage);

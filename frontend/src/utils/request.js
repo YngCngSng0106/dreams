@@ -1,56 +1,71 @@
 const BASE_URL = 'http://10.245.181.47:8080';
 
 export function request(options) {
-    const { url, method = 'GET', data = {}, header = {} } = options;
-    
+    const { url, method = 'GET', data = {}, header = {}, silent } = options;
+
     const token = uni.getStorageSync('token');
     if (token) {
         header['Authorization'] = 'Bearer ' + token;
     }
     header['Content-Type'] = 'application/json';
-    
+
     return new Promise((resolve, reject) => {
-        uni.showLoading({ title: '加载中...', mask: true });
-        
+        // 仅非静默请求显示loading
+        if (!silent) {
+            uni.showLoading({ title: '加载中...', mask: true });
+        }
+
         uni.request({
             url: BASE_URL + url,
             method,
             data,
             header,
             success: (res) => {
-                uni.hideLoading();
+                if (!silent) uni.hideLoading();
                 if (res.statusCode === 200 && res.data && res.data.code === 200) {
                     resolve(res.data.data);
-                } else if (res.statusCode === 401) {
-                    clearAuth();
-                    uni.redirectTo({ url: '/pages/auth/login' });
-                    reject(new Error('请重新登录'));
+                } else if (res.statusCode === 401 || (res.data && res.data.code === 401)) {
+                    // 未登录或token过期
+                    handleUnauth(silent);
+                    reject(new Error('未授权'));
                 } else {
                     const msg = (res.data && res.data.message) || '请求失败';
-                    uni.showToast({ title: msg, icon: 'none' });
+                    if (!silent) uni.showToast({ title: msg, icon: 'none' });
                     reject(new Error(msg));
                 }
             },
             fail: (err) => {
-                uni.hideLoading();
-                uni.showToast({ title: '网络错误，请检查连接', icon: 'none' });
+                if (!silent) {
+                    uni.hideLoading();
+                    uni.showToast({ title: '网络错误，请检查连接', icon: 'none' });
+                }
                 reject(err);
             }
         });
     });
 }
 
-/** 仅清除认证相关数据，保留 locale 等其他设置 */
-function clearAuth() {
-    uni.removeStorageSync('token');
-    uni.removeStorageSync('userId');
+function handleUnauth(silent) {
+    const token = uni.getStorageSync('token');
+    if (token) {
+        // 已登录但token失效 -> 清除并跳转
+        uni.removeStorageSync('token');
+        uni.removeStorageSync('userId');
+        if (!silent) {
+            uni.showToast({ title: '请重新登录', icon: 'none' });
+            setTimeout(() => {
+                uni.redirectTo({ url: '/pages/auth/login' });
+            }, 1500);
+        }
+    }
+    // 未登录时不跳转，让页面自行处理
 }
 
 export function uploadFile(filePath, name = 'file') {
     const token = uni.getStorageSync('token');
     return new Promise((resolve, reject) => {
         uni.showLoading({ title: '上传中...', mask: true });
-        
+
         uni.uploadFile({
             url: BASE_URL + '/api/upload/image',
             filePath,

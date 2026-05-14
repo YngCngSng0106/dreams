@@ -23,11 +23,11 @@
             <view class="settings-card card">
                 <view class="setting-item">
                     <text class="setting-label">{{ $t('detail.pushNotif') }}</text>
-                    <switch :checked="settings.pushEnabled" @change="togglePush" color="#6C5CE7" />
+                    <switch :checked="settings.pushEnabled === 1" @change="togglePush" color="#6C5CE7" />
                 </view>
                 <view class="setting-item">
                     <text class="setting-label">{{ $t('detail.anonMode') }}</text>
-                    <switch :checked="settings.isAnonymousEnabled" @change="toggleAnonymous" color="#6C5CE7" />
+                    <switch :checked="settings.isAnonymousEnabled === 1" @change="toggleAnonymous" color="#6C5CE7" />
                 </view>
             </view>
         </view>
@@ -119,20 +119,20 @@ export default {
         },
         
         async togglePush(e) {
-            this.settings.pushEnabled = e.detail.value;
+            this.settings.pushEnabled = e.detail.value ? 1 : 0;
             try {
                 await settingsApi.updateSettings(this.settings);
             } catch (err) {
-                this.settings.pushEnabled = !this.settings.pushEnabled;
+                this.settings.pushEnabled = !this.settings.pushEnabled ? 1 : 0;
             }
         },
         
         async toggleAnonymous(e) {
-            this.settings.isAnonymousEnabled = e.detail.value;
+            this.settings.isAnonymousEnabled = e.detail.value ? 1 : 0;
             try {
                 await settingsApi.updateSettings(this.settings);
             } catch (err) {
-                this.settings.isAnonymousEnabled = !this.settings.isAnonymousEnabled;
+                this.settings.isAnonymousEnabled = !this.settings.isAnonymousEnabled ? 1 : 0;
             }
         },
         

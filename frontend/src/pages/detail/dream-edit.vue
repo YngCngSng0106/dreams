@@ -58,7 +58,7 @@ export default {
     async onLoad(options) {
         if (!requireLogin()) return;
         this.currentLang = uni.getStorageSync('locale') || 'zh';
-        this.dreamId = options.id;
+        this.dreamId = parseInt(options.id) || 0;
         try {
             this.dream = await dreamApi.detail(this.dreamId);
             const myId = getUserId();

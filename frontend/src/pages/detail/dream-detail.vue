@@ -109,7 +109,7 @@ export default {
         }
     },
     onLoad(options) {
-        this.dreamId = options.id;
+        this.dreamId = parseInt(options.id) || 0;
         this.loadDetail();
     },
     methods: {

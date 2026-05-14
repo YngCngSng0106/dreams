@@ -22,12 +22,12 @@
             
             <view class="notification-item" v-for="notif in notifications" :key="notif.id" @click="readNotification(notif)">
                 <image class="avatar" :src="'/static/default-avatar.png'" mode="aspectFill" />
-                <view class="content-wrapper" :class="{unread: !notif.isRead}">
+                <view class="content-wrapper" :class="{unread: notif.isRead === 0 || notif.isRead === '0'}">
                     <text class="nickname">{{ notif.sourceNickname || '系统' }}</text>
                     <text class="content">{{ notif.content }}</text>
                     <text class="time">{{ formatTime(notif.createTime) }}</text>
                 </view>
-                <view class="unread-dot" v-if="!notif.isRead"></view>
+                <view class="unread-dot" v-if="notif.isRead === 0 || notif.isRead === '0'"></view>
             </view>
             
             <view class="empty-state" v-if="notifications.length === 0">
@@ -44,6 +44,10 @@
 import { notificationApi } from '@/utils/api';
 import { isLoggedIn } from '@/utils/auth';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+import 'dayjs/locale/zh';
+dayjs.extend(relativeTime);
+dayjs.locale('zh');
 
 export default {
     data() {
@@ -88,10 +92,10 @@ export default {
         },
         
         async readNotification(notif) {
-            if (!notif.isRead) {
+            if (notif.isRead === 0 || notif.isRead === '0') {
                 try {
                     await notificationApi.markRead(notif.id);
-                    notif.isRead = true;
+                    notif.isRead = 1;
                     this.unreadCount = Math.max(0, this.unreadCount - 1);
                 } catch (e) {
                     console.error('Mark read failed:', e);

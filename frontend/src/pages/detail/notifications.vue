@@ -6,13 +6,13 @@
         </view>
         
         <view class="notification-list">
-            <view class="notif-item card" v-for="notif in notifications" :key="notif.id" :class="{unread: !notif.isRead}" @click="readNotif(notif)">
+            <view class="notif-item card" v-for="notif in notifications" :key="notif.id" :class="{unread: notif.isRead === 0}" @click="readNotif(notif)">
                 <view class="notif-icon">{{ getNotifIcon(notif.type) }}</view>
                 <view class="notif-content">
                     <text class="notif-text">{{ notif.sourceNickname }} {{ notif.content }}</text>
                     <text class="notif-time">{{ formatTime(notif.createTime) }}</text>
                 </view>
-                <view class="unread-dot" v-if="!notif.isRead"></view>
+                <view class="unread-dot" v-if="notif.isRead === 0"></view>
             </view>
         </view>
         
@@ -26,6 +26,10 @@
 <script>
 import { notificationApi } from '@/utils/api';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+import 'dayjs/locale/zh';
+dayjs.extend(relativeTime);
+dayjs.locale('zh');
 
 const typeIcons = {
     LIKE: '❤️', JOIN: '👥', COMMENT: '💬', FOLLOW: '🔔', REPLY: '↩️', INVITE: '📨'
@@ -58,10 +62,10 @@ export default {
         },
         
         async readNotif(notif) {
-            if (!notif.isRead) {
+            if (notif.isRead === 0) {
                 try {
                     await notificationApi.markRead(notif.id);
-                    notif.isRead = true;
+                    notif.isRead = 1;
                 } catch (e) {
                     // ignore
                 }
@@ -71,7 +75,7 @@ export default {
         async markAllRead() {
             try {
                 await notificationApi.markAllRead();
-                this.notifications.forEach(n => n.isRead = true);
+                this.notifications.forEach(n => n.isRead = 1);
                 uni.showToast({ title: this.$t('detail.markAllRead'), icon: 'success' });
             } catch (e) {
                 console.error('Mark all read failed:', e);

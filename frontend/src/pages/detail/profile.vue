@@ -28,8 +28,8 @@
         </view>
         
         <view class="action-row" v-if="isOtherUser">
-            <button class="btn-primary" :class="{following: followStatus?.isFollowing}" @click="toggleFollow">
-                {{ followStatus?.isFollowing ? $t('detail.followingYes') : $t('detail.followingNo') }}
+            <button class="btn-primary" :class="{following: followStatus?.isFollowing === 1}" @click="toggleFollow">
+                {{ followStatus?.isFollowing === 1 ? $t('detail.followingYes') : $t('detail.followingNo') }}
             </button>
         </view>
         
@@ -90,7 +90,7 @@ export default {
     },
     onLoad(options) {
         this.currentLang = uni.getStorageSync('locale') || 'zh';
-        this.userId = options.id;
+        this.userId = parseInt(options.id) || 0;
         this.isOtherUser = this.userId !== getUserId();
         this.loadProfile();
         this.loadDreams();
@@ -135,13 +135,14 @@ export default {
                 return;
             }
             try {
-                if (this.followStatus?.isFollowing) {
+                if (this.followStatus?.isFollowing === 1) {
                     await followApi.unfollow(this.userId);
-                    this.followStatus.isFollowing = false;
+                    this.followStatus.isFollowing = 0;
                     this.user.followersCount = Math.max(0, (this.user.followersCount || 1) - 1);
                 } else {
                     await followApi.follow(this.userId);
-                    this.followStatus = { isFollowing: true, isFollower: false };
+                    if (!this.followStatus) this.followStatus = {};
+                    this.followStatus.isFollowing = 1;
                     this.user.followersCount = (this.user.followersCount || 0) + 1;
                 }
             } catch (e) {

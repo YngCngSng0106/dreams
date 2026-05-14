@@ -56,10 +56,10 @@ public class FollowService {
         FollowStatusResponse resp = new FollowStatusResponse();
         LambdaQueryWrapper<Follow> w1 = new LambdaQueryWrapper<>();
         w1.eq(Follow::getFollowerId, myId).eq(Follow::getFolloweeId, otherId);
-        resp.setIsFollowing(followMapper.selectCount(w1) > 0);
+        resp.setIsFollowing(followMapper.selectCount(w1) > 0 ? 1 : 0);
         LambdaQueryWrapper<Follow> w2 = new LambdaQueryWrapper<>();
         w2.eq(Follow::getFollowerId, otherId).eq(Follow::getFolloweeId, myId);
-        resp.setIsFollower(followMapper.selectCount(w2) > 0);
+        resp.setIsFollower(followMapper.selectCount(w2) > 0 ? 1 : 0);
         return resp;
     }
 

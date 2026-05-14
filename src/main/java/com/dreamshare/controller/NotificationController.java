@@ -19,7 +19,7 @@ public class NotificationController {
                                                     @RequestParam(defaultValue = "1") int page,
                                                     @RequestParam(defaultValue = "20") int pageSize,
                                                     @RequestParam(required = false) String type,
-                                                    @RequestParam(required = false) Boolean isRead) {
+                                                    @RequestParam(required = false) Integer isRead) {
         return Result.ok(notificationService.getNotifications(userId, page, pageSize, type, isRead));
     }
 

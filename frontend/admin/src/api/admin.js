@@ -25,8 +25,7 @@ request.interceptors.response.use(
     const res = response.data
     // 后端返回格式: {code: 200, message: 'success', data: {...}}
     if (res && res.code === 200) {
-      // 解包 Result，直接返回 data 部分
-      return res.data !== undefined ? res.data : res
+        return res.data; // 直接返回 data，即使是 null 也没问题
     }
     // 非 200 状态，返回原始 Result 以便调用方处理
     return Promise.reject(new Error(res?.message || '请求失败'))
