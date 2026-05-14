@@ -58,7 +58,7 @@ public class DiscussionService {
         User creator = userMapper.selectById(d.getCreatorId());
         resp.setCreatorNickname(creator != null ? creator.getNickname() : "未知");
         resp.setDreamId(d.getDreamId());
-        resp.setIsPreseted(d.getIsPreseted() != null && d.getIsPreseted() == 1);
+        resp.setIsPreseted(d.getIsPreseted());
         resp.setMemberCount(d.getMemberCount());
         resp.setCreateTime(d.getCreateTime());
         return resp;

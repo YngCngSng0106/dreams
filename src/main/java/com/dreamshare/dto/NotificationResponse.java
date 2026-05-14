@@ -9,6 +9,6 @@ public class NotificationResponse {
     private String sourceNickname;
     private Long relatedId;
     private String content;
-    private Boolean isRead;
+    private Integer isRead;
     private LocalDateTime createTime;
 }

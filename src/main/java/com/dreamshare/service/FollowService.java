@@ -90,7 +90,7 @@ public class FollowService {
         n.setSourceUserId(sourceUserId);
         n.setRelatedId(relatedId);
         n.setContent(content);
-        n.setIsRead(false);
+        n.setIsRead(0);
         n.setCreateTime(LocalDateTime.now());
         notificationMapper.insert(n);
     }

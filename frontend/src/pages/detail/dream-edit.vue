@@ -72,7 +72,7 @@ export default {
                 keywords: this.dream.keywords || '',
                 clarity: this.dream.clarity || 3,
                 description: this.dream.description || '',
-                isRecurring: this.dream.isRecurring || false
+                isRecurring: this.dream.isRecurring ? true : false
             };
         } catch (e) {
             console.error('Load dream failed:', e);
@@ -91,7 +91,8 @@ export default {
             }
             this.saving = true;
             try {
-                await dreamApi.update(this.dreamId, this.form);
+                const submitData = {...this.form, isRecurring: this.form.isRecurring ? 1 : 0};
+                await dreamApi.update(this.dreamId, submitData);
                 uni.showToast({ title: this.$t('detail.saveSuccess'), icon: 'success' });
                 setTimeout(() => uni.navigateBack(), 1500);
             } catch (e) {
