@@ -84,7 +84,7 @@ public class NotificationService {
             resp.setSourceNickname(src != null ? src.getNickname() : "系统");
             resp.setRelatedId(n.getRelatedId());
             resp.setContent(n.getContent());
-            resp.setIsRead(n.getIsRead() != null && n.getIsRead() == 1);
+            resp.setIsRead(n.getIsRead());
             resp.setCreateTime(n.getCreateTime());
             return resp;
         }).collect(Collectors.toList()));

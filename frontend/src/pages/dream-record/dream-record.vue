@@ -213,7 +213,7 @@ export default {
                     location: this.location || null,
                     keywords: this.keywords || null,  // 保持字符串格式
                     clarity: this.clarity,
-                    isRecurring: this.isRecurring,
+                    isRecurring: this.isRecurring ? 1 : 0,
                     images: imagesJson
                 };
 

@@ -87,7 +87,7 @@ public class DreamService {
         dreamMapper.updateById(dream);
     }
 
-    public Page<DreamListResponse> getMyDreams(Long userId, int page, int pageSize, Long categoryId, Boolean isRecurring) {
+    public Page<DreamListResponse> getMyDreams(Long userId, int page, int pageSize, Long categoryId, Integer isRecurring) {
         LambdaQueryWrapper<Dream> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Dream::getUserId, userId);
         wrapper.eq(Dream::getIsDeleted, 0);

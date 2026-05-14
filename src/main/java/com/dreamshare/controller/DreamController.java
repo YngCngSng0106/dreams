@@ -46,7 +46,7 @@ public class DreamController {
                                                    @RequestParam(defaultValue = "1") int page,
                                                    @RequestParam(defaultValue = "20") int pageSize,
                                                    @RequestParam(required = false) Long categoryId,
-                                                   @RequestParam(required = false) Boolean isRecurring) {
+                                                   @RequestParam(required = false) Integer isRecurring) {
         return Result.ok(dreamService.getMyDreams(userId, page, pageSize, categoryId, isRecurring));
     }
 
