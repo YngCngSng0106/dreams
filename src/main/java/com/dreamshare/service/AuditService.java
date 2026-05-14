@@ -34,8 +34,8 @@ public class AuditService {
             for (ContentAudit audit : pendingAudits) {
                 audit.setAuditStatus("PASSED");
                 audit.setAuditedAt(LocalDateTime.now());
+                contentAuditMapper.updateById(audit);
             }
-            contentAuditMapper.updateBatchById(pendingAudits);
             return;
         }
 
