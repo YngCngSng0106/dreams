@@ -16,26 +16,18 @@ public class InterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
-                        // 认证相关 (无需登录)
+                        // 认证相关
                         "/api/auth/login",
                         "/api/auth/register",
                         "/api/auth/verify",
                         "/api/auth/send-code",
                         "/api/auth/reset-password",
                         "/api/auth/logout",
-                        // 公开接口
+                        // 分类 - 全部公开
                         "/api/categories/**",
-                        "/api/dreams/feed",
-                        "/api/dreams/{id}",
-                        "/api/dreams/{id}/similar",
-                        "/api/dreams/{id}/stats",
-                        "/api/discussions/**",
-                        "/api/comments/{discussionId}",
+                        // 搜索
                         "/api/search/**",
-                        "/api/users/{userId}",
-                        "/api/users/{userId}/dreams",
-                        "/api/users/{userId}/discussions",
-                        // 管理后台 (自行通过 @RequestHeader Authorization 校验)
+                        // 管理后台 (自行校验)
                         "/api/admin/**"
                 );
     }

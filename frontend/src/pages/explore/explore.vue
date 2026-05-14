@@ -92,6 +92,10 @@ import { dreamApi, categoryApi } from '@/utils/api';
 import { requireLogin } from '@/utils/auth';
 import { setLocale } from '@/locale/index';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+import 'dayjs/locale/zh';
+dayjs.extend(relativeTime);
+dayjs.locale('zh');
 
 export default {
     computed: {
