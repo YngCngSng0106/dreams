@@ -2,22 +2,22 @@
     <view class="disc-detail-page">
         <!-- 创建模式 -->
         <view class="create-form card" v-if="isCreateMode">
-            <text class="form-title">{{ $t('detail.createDiscussion') || '创建讨论组' }}</text>
+            <text class="form-title">{{ $t('detail.createDiscussion') }}</text>
             <view class="form-item">
-                <text class="label">{{ $t('detail.discussionTitle') || '标题' }}</text>
-                <input class="input" v-model="createForm.title" :placeholder="$t('detail.enterTitle') || '请输入标题'" />
+                <text class="label">{{ $t('detail.discussionTitle') }}</text>
+                <input class="input" v-model="createForm.title" :placeholder="$t('detail.enterTitle')" />
             </view>
             <view class="form-item">
-                <text class="label">{{ $t('detail.discussionDesc') || '描述' }}</text>
-                <textarea class="textarea" v-model="createForm.description" :placeholder="$t('detail.enterDesc') || '请输入描述'" maxlength="500" />
+                <text class="label">{{ $t('detail.discussionDesc') }}</text>
+                <textarea class="textarea" v-model="createForm.description" :placeholder="$t('detail.enterDesc')" maxlength="500" />
             </view>
             <view class="form-item">
-                <text class="label">{{ $t('detail.discussionType') || '类型' }}</text>
+                <text class="label">{{ $t('detail.discussionType') }}</text>
                 <picker :range="typeOptions" @change="onTypeChange" :value="typeIndex">
                     <view class="picker-value">{{ typeOptions[typeIndex] }}</view>
                 </picker>
             </view>
-            <button class="btn-primary" @click="submitCreate" :loading="submitting">{{ $t('detail.create') || '创建' }}</button>
+            <button class="btn-primary" @click="submitCreate" :loading="submitting">{{ $t('discussion.create') || '创建' }}</button>
         </view>
 
         <!-- 查看详情模式 -->
@@ -98,12 +98,18 @@ export default {
                 description: '',
                 type: 0
             },
-            typeOptions: ['公开', '私密', '邀请'],
             typeIndex: 0
         };
     },
     computed: {
-        isLoggedIn() { return isLoggedIn(); }
+        isLoggedIn() { return isLoggedIn(); },
+        typeOptions() {
+            return [
+                this.$t('detail.typePublic', '公开'),
+                this.$t('detail.typePrivate', '私密'),
+                this.$t('detail.typeInvite', '邀请')
+            ];
+        }
     },
     onLoad(options) {
         // 创建模式
