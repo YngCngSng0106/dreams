@@ -28,6 +28,11 @@
             </view>
             
             <view class="input-row">
+                <text class="row-label">{{ $t('auth.phone') }}</text>
+                <input class="row-input" v-model="phone" :placeholder="$t('auth.placeholder.phone')" placeholder-class="input-placeholder" type="number" maxlength="11" />
+            </view>
+            
+            <view class="input-row">
                 <text class="row-label">{{ $t('auth.password') }}</text>
                 <input class="row-input" v-model="password" :placeholder="$t('auth.placeholder.password')" placeholder-class="input-placeholder" type="password" />
             </view>
@@ -65,6 +70,7 @@ export default {
             username: '',
             nickname: '',
             email: '',
+            phone: '',
             password: '',
             confirmPassword: '',
             loading: false
@@ -94,7 +100,8 @@ export default {
                     username: this.username,
                     nickname: this.nickname,
                     password: this.password,
-                    email: this.email
+                    email: this.email,
+                    phone: this.phone
                 });
                 setToken(res.token);
                 setUserId(res.userId);

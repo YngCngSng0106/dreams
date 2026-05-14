@@ -22,7 +22,7 @@ export function request(options) {
                 if (res.statusCode === 200 && res.data && res.data.code === 200) {
                     resolve(res.data.data);
                 } else if (res.statusCode === 401) {
-                    uni.clearStorageSync();
+                    clearAuth();
                     uni.redirectTo({ url: '/pages/auth/login' });
                     reject(new Error('请重新登录'));
                 } else {
@@ -40,6 +40,12 @@ export function request(options) {
     });
 }
 
+/** 仅清除认证相关数据，保留 locale 等其他设置 */
+function clearAuth() {
+    uni.removeStorageSync('token');
+    uni.removeStorageSync('userId');
+}
+
 export function uploadFile(filePath, name = 'file') {
     const token = uni.getStorageSync('token');
     return new Promise((resolve, reject) => {
@@ -50,7 +56,7 @@ export function uploadFile(filePath, name = 'file') {
             filePath,
             name,
             header: {
-                'Authorization': 'Bearer ' + token
+                'Authorization': token ? 'Bearer ' + token : ''
             },
             success: (res) => {
                 uni.hideLoading();

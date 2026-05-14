@@ -14,7 +14,8 @@ public class Notification {
     private Long sourceUserId;
     private Long relatedId;
     private String content;
-    private Boolean isRead;
+    /** 使用 Integer 与数据库 TINYINT(1) 保持一致: 0=未读, 1=已读 */
+    private Integer isRead;
     @TableLogic
     private Integer isDeleted;
     @TableField(fill = FieldFill.INSERT)

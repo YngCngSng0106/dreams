@@ -111,7 +111,7 @@ const typeLabel = (type) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/notifications', {
+    const notificationsData = await admin.get('/admin/notifications', {
       params: {
         page: pagination.page,
         size: pagination.size,
@@ -158,7 +158,7 @@ const handleSend = async () => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确定要删除该通知吗？', '警告', { type: 'warning' })
-    await admin.post(`/admin/notifications/${row.id}/delete`)
+    await admin.post(`/admin/notifications/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

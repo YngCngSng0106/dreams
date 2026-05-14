@@ -19,10 +19,17 @@ request.interceptors.request.use(
   }
 )
 
-// Response interceptor: handle 401
+// Response interceptor: unwrap Result wrapper {code, message, data}
 request.interceptors.response.use(
   response => {
-    return response.data
+    const res = response.data
+    // 后端返回格式: {code: 200, message: 'success', data: {...}}
+    if (res && res.code === 200) {
+      // 解包 Result，直接返回 data 部分
+      return res.data !== undefined ? res.data : res
+    }
+    // 非 200 状态，返回原始 Result 以便调用方处理
+    return Promise.reject(new Error(res?.message || '请求失败'))
   },
   error => {
     if (error.response && error.response.status === 401) {

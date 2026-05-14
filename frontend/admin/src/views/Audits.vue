@@ -98,7 +98,7 @@ const truncate = (str, len) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/audits', {
+    const auditsData = await admin.get('/admin/audits', {
       params: {
         page: pagination.page,
         size: pagination.size,
@@ -121,7 +121,7 @@ const handleReset = () => { searchForm.status = ''; searchForm.targetType = ''; 
 const handleApprove = async (row) => {
   try {
     await ElMessageBox.confirm('确定要通过该审核吗？', '确认', { type: 'info' })
-    await admin.post(`/admin/audits/${row.id}/approve`)
+    await admin.post(`/admin/audits/${row.id}/approve`, {})
     ElMessage.success('审核通过')
     fetchData()
   } catch (e) {

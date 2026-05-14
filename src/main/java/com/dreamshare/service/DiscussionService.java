@@ -7,6 +7,7 @@ import com.dreamshare.entity.*;
 import com.dreamshare.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,8 +20,9 @@ public class DiscussionService {
     @Autowired private DiscussionMemberMapper discussionMemberMapper;
     @Autowired private UserMapper userMapper;
     @Autowired private DreamMapper dreamMapper;
-    @Autowired private NotificationMapper notificationMapper;
+    @Autowired private NotificationService notificationService;
 
+    @Transactional
     public DiscussionDetailResponse createDiscussion(Long userId, DiscussionCreateRequest req) {
         Discussion discussion = new Discussion();
         discussion.setTitle(req.getTitle());
@@ -28,11 +30,9 @@ public class DiscussionService {
         discussion.setCoverImage(req.getCoverImage());
         discussion.setCreatorId(userId);
         discussion.setDreamId(req.getDreamId());
-        discussion.setIsPreseted(false);
+        discussion.setIsPreseted(0);
         discussion.setMemberCount(1);
         discussion.setIsDeleted(0);
-        discussion.setCreateTime(LocalDateTime.now());
-        discussion.setUpdateTime(LocalDateTime.now());
         discussionMapper.insert(discussion);
 
         // 创建者为管理员
@@ -58,12 +58,13 @@ public class DiscussionService {
         User creator = userMapper.selectById(d.getCreatorId());
         resp.setCreatorNickname(creator != null ? creator.getNickname() : "未知");
         resp.setDreamId(d.getDreamId());
-        resp.setIsPreseted(d.getIsPreseted());
+        resp.setIsPreseted(d.getIsPreseted() != null && d.getIsPreseted() == 1);
         resp.setMemberCount(d.getMemberCount());
         resp.setCreateTime(d.getCreateTime());
         return resp;
     }
 
+    @Transactional
     public DiscussionDetailResponse updateDiscussion(Long userId, Long discussionId, DiscussionCreateRequest req) {
         Discussion d = discussionMapper.selectById(discussionId);
         if (d == null) throw new RuntimeException("讨论组不存在");
@@ -74,7 +75,7 @@ public class DiscussionService {
         if (discussionMemberMapper.selectCount(memberWrapper) == 0) {
             throw new RuntimeException("无权修改");
         }
-        d.setTitle(req.getTitle());
+        if (req.getTitle() != null) d.setTitle(req.getTitle());
         if (req.getDescription() != null) d.setDescription(req.getDescription());
         if (req.getCoverImage() != null) d.setCoverImage(req.getCoverImage());
         d.setUpdateTime(LocalDateTime.now());
@@ -82,6 +83,7 @@ public class DiscussionService {
         return getDiscussionDetail(d.getId());
     }
 
+    @Transactional
     public void deleteDiscussion(Long userId, Long discussionId) {
         Discussion d = discussionMapper.selectById(discussionId);
         if (d == null) throw new RuntimeException("讨论组不存在");
@@ -93,8 +95,8 @@ public class DiscussionService {
     public Page<DiscussionListResponse> getDiscussions(int page, int pageSize, String type, String keyword) {
         LambdaQueryWrapper<Discussion> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Discussion::getIsDeleted, 0);
-        if ("preset".equals(type)) wrapper.eq(Discussion::getIsPreseted, true);
-        else if ("user".equals(type)) wrapper.eq(Discussion::getIsPreseted, false);
+        if ("preset".equals(type)) wrapper.eq(Discussion::getIsPreseted, 1);
+        else if ("user".equals(type)) wrapper.eq(Discussion::getIsPreseted, 0);
         if (keyword != null && !keyword.trim().isEmpty()) {
             wrapper.and(w -> w.like(Discussion::getTitle, keyword).or().like(Discussion::getDescription, keyword));
         }
@@ -142,6 +144,7 @@ public class DiscussionService {
         return result;
     }
 
+    @Transactional
     public void joinDiscussion(Long userId, Long discussionId) {
         Discussion d = discussionMapper.selectById(discussionId);
         if (d == null) throw new RuntimeException("讨论组不存在");
@@ -160,9 +163,10 @@ public class DiscussionService {
         discussionMapper.updateById(d);
 
         // 通知创建者
-        sendNotification(d.getCreatorId(), "JOIN", userId, discussionId, "加入了你的讨论组");
+        notificationService.sendNotification(d.getCreatorId(), "JOIN", userId, discussionId, "加入了你的讨论组");
     }
 
+    @Transactional
     public void leaveDiscussion(Long userId, Long discussionId) {
         LambdaQueryWrapper<DiscussionMember> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DiscussionMember::getDiscussionId, discussionId).eq(DiscussionMember::getUserId, userId);
@@ -187,7 +191,7 @@ public class DiscussionService {
         if (member == null || !"ADMIN".equals(member.getRole())) throw new RuntimeException("只有管理员可以邀请");
 
         // 发送通知
-        sendNotification(inviteUserId, "INVITE", userId, discussionId, "邀请你加入讨论组");
+        notificationService.sendNotification(inviteUserId, "INVITE", userId, discussionId, "邀请你加入讨论组");
     }
 
     public Page<DiscussionListResponse> getRecommendedDiscussions(Long userId, int page, int pageSize) {
@@ -203,18 +207,6 @@ public class DiscussionService {
         result.setTotal((long) discussions.size());
         result.setRecords(discussions.stream().map(this::toListResponse).collect(Collectors.toList()));
         return result;
-    }
-
-    private void sendNotification(Long toUserId, String type, Long sourceUserId, Long relatedId, String content) {
-        Notification n = new Notification();
-        n.setUserId(toUserId);
-        n.setType(type);
-        n.setSourceUserId(sourceUserId);
-        n.setRelatedId(relatedId);
-        n.setContent(content);
-        n.setIsRead(false);
-        n.setCreateTime(LocalDateTime.now());
-        notificationMapper.insert(n);
     }
 
     private Page<DiscussionListResponse> convertToListPage(Page<Discussion> dPage) {

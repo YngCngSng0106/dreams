@@ -7,4 +7,5 @@ public class RegisterRequest {
     @NotBlank private String password;
     @NotBlank private String nickname;
     private String email;
+    private String phone;  // 手机号（选填）
 }

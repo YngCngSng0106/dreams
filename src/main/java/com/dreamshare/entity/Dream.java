@@ -17,7 +17,8 @@ public class Dream {
     private String keywords;
     private Integer clarity;
     private String description;
-    private Boolean isRecurring;
+    /** 使用 Integer 与数据库 TINYINT(1) 保持一致: 0=非重复, 1=重复 */
+    private Integer isRecurring;
     private String tags;
     private String images;
     private Integer isPinned; // 0=not pinned, 1=pinned

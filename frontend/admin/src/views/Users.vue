@@ -11,8 +11,8 @@
       <el-input v-model="searchForm.keyword" placeholder="搜索用户名/昵称/邮箱" clearable class="search-input" @keyup.enter="handleSearch" />
       <el-select v-model="searchForm.isBanned" placeholder="全部状态" clearable class="search-select">
         <el-option label="全部状态" value="" />
-        <el-option label="正常" value="0" />
-        <el-option label="封禁" value="1" />
+        <el-option label="正常" :value="0" />
+        <el-option label="封禁" :value="1" />
       </el-select>
       <el-button type="primary" @click="handleSearch">搜索</el-button>
       <el-button @click="handleReset">重置</el-button>
@@ -29,13 +29,13 @@
       </el-table-column>
       <el-table-column prop="isBanned" label="状态" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.isBanned ? 'danger' : 'success'">{{ row.isBanned ? '封禁' : '正常' }}</el-tag>
+          <el-tag :type="row.isBanned == 1 ? 'danger' : 'success'">{{ row.isBanned == 1 ? '封禁' : '正常' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
-          <el-button :type="row.isBanned ? 'success' : 'danger'" size="small" @click="handleBanUnban(row)">
-            {{ row.isBanned ? '解封' : '封禁' }}
+          <el-button :type="row.isBanned == 1 ? 'success' : 'danger'" size="small" @click="handleBanUnban(row)">
+            {{ row.isBanned == 1 ? '解封' : '封禁' }}
           </el-button>
           <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
         </template>
@@ -67,18 +67,20 @@ const formatDate = (val) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/users', {
+    const data = await admin.get('/admin/users', {
       params: {
         page: pagination.page,
         size: pagination.size,
-        keyword: searchForm.keyword,
-        isBanned: searchForm.isBanned !== '' ? searchForm.isBanned : undefined
+        keyword: searchForm.keyword || undefined,
+        isBanned: searchForm.isBanned !== '' ? parseInt(searchForm.isBanned) : undefined
       }
     })
-    tableData.value = data.records || data.content || data.list || []
-    pagination.total = data.total || data.totalElements || 0
+    // admin.js interceptor 已解包 Result，直接返回 data
+    tableData.value = data.records || []
+    pagination.total = data.total || 0
   } catch (err) {
-    ElMessage.error('获取用户列表失败')
+    const msg = err.message || '获取用户列表失败'
+    ElMessage.error(msg)
   } finally {
     loading.value = false
   }
@@ -88,12 +90,12 @@ const handleSearch = () => { pagination.page = 1; fetchData() }
 const handleReset = () => { searchForm.keyword = ''; searchForm.isBanned = ''; pagination.page = 1; fetchData() }
 
 const handleBanUnban = async (row) => {
-  const isBan = !row.isBanned
+  const isBan = row.isBanned != 1
   const action = isBan ? '封禁' : '解封'
   try {
     await ElMessageBox.confirm(`确定要${action}用户"${row.username}"吗？`, '确认', { type: isBan ? 'warning' : 'info' })
     const url = isBan ? `/admin/users/${row.id}/ban` : `/admin/users/${row.id}/unban`
-    await admin.post(url)
+    await admin.post(url, {})
     ElMessage.success(`${action}成功`)
     fetchData()
   } catch (e) {
@@ -104,7 +106,7 @@ const handleBanUnban = async (row) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要删除用户"${row.username}"吗？此操作不可恢复！`, '警告', { type: 'warning' })
-    await admin.post(`/admin/users/${row.id}/delete`)
+    await admin.post(`/admin/users/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

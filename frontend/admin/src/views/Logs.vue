@@ -99,7 +99,7 @@ const opLabel = (op) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/logs', {
+    const logData = await admin.get('/admin/logs', {
       params: {
         page: pagination.page,
         size: pagination.size,
@@ -108,8 +108,8 @@ const fetchData = async () => {
         operation: searchForm.operation !== '' ? searchForm.operation : undefined
       }
     })
-    tableData.value = data.records || data.content || data.list || []
-    pagination.total = data.total || data.totalElements || 0
+    tableData.value = logData.records || logData.content || logData.list || []
+    pagination.total = logData.total || logData.totalElements || 0
   } catch (err) {
     ElMessage.error('获取操作日志失败')
   } finally {

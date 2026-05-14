@@ -78,15 +78,15 @@ const truncate = (str, len) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/discussions', {
+    const discussionsData = await admin.get('/admin/discussions', {
       params: {
         page: pagination.page,
         size: pagination.size,
         keyword: searchForm.keyword
       }
     })
-    tableData.value = data.records || data.content || data.list || []
-    pagination.total = data.total || data.totalElements || 0
+    tableData.value = discussionsData.records || discussionsData.content || discussionsData.list || []
+    pagination.total = discussionsData.total || discussionsData.totalElements || 0
   } catch (err) {
     ElMessage.error('获取讨论组列表失败')
   } finally {
@@ -102,8 +102,8 @@ const handleViewMembers = async (row) => {
   memberDialogVisible.value = true
   memberLoading.value = true
   try {
-    const { data } = await admin.get(`/admin/discussions/${row.id}/members`)
-    memberList.value = data || []
+    const membersData = await admin.get(`/admin/discussions/${row.id}/members`)
+    memberList.value = membersData || []
   } catch (err) {
     ElMessage.error('获取成员列表失败')
   } finally {
@@ -114,7 +114,7 @@ const handleViewMembers = async (row) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要删除讨论组"${row.title}"吗？此操作不可恢复！`, '警告', { type: 'warning' })
-    await admin.post(`/admin/discussions/${row.id}/delete`)
+    await admin.post(`/admin/discussions/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

@@ -83,8 +83,8 @@ const resetForm = () => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/categories')
-    tableData.value = data || []
+    const categoriesData = await admin.get('/admin/categories')
+    tableData.value = categoriesData || []
   } catch (err) {
     ElMessage.error('获取分类列表失败')
   } finally {
@@ -127,7 +127,7 @@ const handleSubmit = async () => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要删除分类"${row.name}"吗？`, '警告', { type: 'warning' })
-    await admin.post(`/admin/categories/${row.id}/delete`)
+    await admin.post(`/admin/categories/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

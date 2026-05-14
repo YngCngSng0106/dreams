@@ -11,6 +11,7 @@ CREATE TABLE `user` (
     `nickname` VARCHAR(50) NOT NULL,
     `avatar` VARCHAR(255) DEFAULT NULL,
     `email` VARCHAR(100) DEFAULT NULL,
+    `phone` VARCHAR(20) DEFAULT NULL,
     `gender` TINYINT DEFAULT 0,
     `bio` VARCHAR(500) DEFAULT '',
     `role` TINYINT DEFAULT 0 COMMENT '0=user, 1=admin',

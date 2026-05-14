@@ -11,8 +11,8 @@
         
         <view class="form-section">
             <view class="input-row">
-                <text class="label">{{ $t('auth.username') }}</text>
-                <input v-model="username" :placeholder="$t('auth.placeholder.username')" placeholder-class="input-placeholder" class="input-field" />
+                <text class="label">{{ $t('auth.account') }}</text>
+                <input v-model="username" :placeholder="$t('auth.placeholder.account')" placeholder-class="input-placeholder" class="input-field" />
             </view>
             
             <view class="input-row">

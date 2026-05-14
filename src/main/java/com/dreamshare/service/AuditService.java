@@ -6,6 +6,7 @@ import com.dreamshare.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,26 +20,45 @@ public class AuditService {
     @Autowired private CommentMapper commentMapper;
 
     @Scheduled(cron = "${dream.audit.cron}")
+    @Transactional
     public void autoAudit() {
         LambdaQueryWrapper<ContentAudit> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContentAudit::getAuditStatus, "PENDING");
         List<ContentAudit> pendingAudits = contentAuditMapper.selectList(wrapper);
+        if (pendingAudits.isEmpty()) return;
 
         // 获取所有关键词
         List<AuditKeyword> keywords = auditKeywordMapper.selectList(null);
-        if (keywords.isEmpty()) return;
+        if (keywords.isEmpty()) {
+            // 没有关键词配置，全部通过
+            for (ContentAudit audit : pendingAudits) {
+                audit.setAuditStatus("PASSED");
+                audit.setAuditedAt(LocalDateTime.now());
+            }
+            contentAuditMapper.updateBatchById(pendingAudits);
+            return;
+        }
 
+        LocalDateTime now = LocalDateTime.now();
         for (ContentAudit audit : pendingAudits) {
+            // 如果内容为空，直接通过
+            if (audit.getContentSnapshot() == null || audit.getContentSnapshot().isEmpty()) {
+                audit.setAuditStatus("PASSED");
+                audit.setAuditedAt(now);
+                contentAuditMapper.updateById(audit);
+                continue;
+            }
+
             for (AuditKeyword kw : keywords) {
+                if (kw.getKeyword() == null) continue;
                 if (audit.getContentSnapshot().contains(kw.getKeyword())) {
                     audit.setAuditStatus("REJECTED");
                     audit.setRejectReason("包含违规内容: " + kw.getKeyword() + " (类型:" + kw.getKeywordType() + ", 级别:" + kw.getSeverity() + ")");
-                    audit.setAuditedAt(LocalDateTime.now());
+                    audit.setAuditedAt(now);
                     contentAuditMapper.updateById(audit);
 
                     // 根据严重程度处理
                     if ("HIGH".equals(kw.getSeverity())) {
-                        // 直接软删除
                         deleteTarget(audit.getTargetType(), audit.getTargetId());
                     }
                     break;  // 匹配到一个关键词就标记
@@ -47,7 +67,7 @@ public class AuditService {
             // 没有匹配到关键词的通过
             if ("PENDING".equals(audit.getAuditStatus())) {
                 audit.setAuditStatus("PASSED");
-                audit.setAuditedAt(LocalDateTime.now());
+                audit.setAuditedAt(now);
                 contentAuditMapper.updateById(audit);
             }
         }

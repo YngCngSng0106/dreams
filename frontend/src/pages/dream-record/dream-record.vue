@@ -62,13 +62,13 @@
             <!-- 上传图片 -->
             <view class="form-item" v-if="imageList.length > 0 || imageList.length < 3">
                 <text class="label">{{ $t('record.uploadImage') }}</text>
-                <view class="image-list">
-                    <view class="image-item" v-for="(img, index) in imageList" :key="index">
-                        <image :src="img" mode="aspectFill" class="preview-img" />
-                        <text class="delete-icon" @click.stop="imageList.splice(index,1)">✕</text>
-                    </view>
-                    <view class="upload-btn" v-if="imageList.length < 3" @click="uploadImage">+</view>
+            <view class="image-list">
+                <view class="image-item" v-for="(img, index) in imageList" :key="index">
+                    <image :src="img" mode="aspectFill" class="preview-img" />
+                    <text class="delete-icon" @click.stop="removeImage(index)">✕</text>
                 </view>
+                <view class="upload-btn" v-if="imageList.length < 3" @click="uploadImage">+</view>
+            </view>
             </view>
             
             <button class="publish-btn" @click="submitDream" :loading="submitting">
@@ -96,6 +96,7 @@
 import { dreamApi, categoryApi } from '@/utils/api';
 import { requireLogin, getToken } from '@/utils/auth';
 import { setLocale } from '@/locale';
+import { uploadFile } from '@/utils/request';
 
 export default {
     data() {
@@ -112,7 +113,8 @@ export default {
             clarity: 2,
             description: '',
             isRecurring: false,
-            imageList: [],
+            imageList: [],        // 本地临时路径
+            uploadedImageUrls: [], // 已上传到服务器的URL
             categories: [],
             showCategory: false,
             submitting: false,
@@ -165,6 +167,22 @@ export default {
                 }
             });
         },
+        removeImage(index) {
+            this.imageList.splice(index, 1);
+        },
+        async uploadImages() {
+            // 批量上传图片到服务器
+            const urls = [];
+            for (const filePath of this.imageList) {
+                try {
+                    const result = await uploadFile(filePath);
+                    urls.push(result.url);
+                } catch (e) {
+                    console.error('Upload failed:', e);
+                }
+            }
+            return urls;
+        },
         async submitDream() {
             if (!this.description) {
                 uni.showToast({ title: this.$t('record.fillDesc'), icon: 'none' });
@@ -176,16 +194,30 @@ export default {
             }
             this.submitting = true;
             try {
-                await dreamApi.create({
-                    categoryId: this.dreamType,
-                    title: this.description.substring(0, 50),
-                    content: this.description,
+                // 先上传图片（如果有）
+                let imagesJson = null;
+                if (this.imageList.length > 0) {
+                    uni.showLoading({ title: '上传图片中...', mask: true });
+                    const uploadedUrls = await this.uploadImages();
+                    uni.hideLoading();
+                    if (uploadedUrls.length > 0) {
+                        imagesJson = JSON.stringify(uploadedUrls);
+                    }
+                }
+
+                // 构建提交数据 — 匹配后端 DreamCreateRequest 字段
+                const submitData = {
+                    categoryId: this.dreamType ? parseInt(this.dreamType) : null,
+                    description: this.description,
                     dreamDate: this.dreamDate,
-                    location: this.location,
-                    keywords: this.keywords.split(',').filter(k => k.trim()),
+                    location: this.location || null,
+                    keywords: this.keywords || null,  // 保持字符串格式
                     clarity: this.clarity,
-                    isRecurring: this.isRecurring
-                });
+                    isRecurring: this.isRecurring,
+                    images: imagesJson
+                };
+
+                await dreamApi.create(submitData);
                 uni.showToast({ title: this.$t('record.publishSuccess'), icon: 'success' });
                 setTimeout(() => {
                     uni.navigateBack();

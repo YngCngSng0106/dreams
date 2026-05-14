@@ -11,7 +11,7 @@
         <el-form-item prop="username">
           <el-input
             v-model="form.username"
-            placeholder="用户名"
+            placeholder="用户名/手机号/邮箱"
             prefix-icon="User"
             size="large"
           />
@@ -59,7 +59,7 @@ const form = reactive({
 })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名/手机号/邮箱', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
@@ -69,16 +69,22 @@ const handleLogin = async () => {
     if (!valid) return
     loading.value = true
     try {
-      const res = await request.post('/auth/login', {
+      const data = await request.post('/auth/login', {
         username: form.username,
         password: form.password
       })
-      localStorage.setItem('admin_token', res.token || res.data?.token)
-      localStorage.setItem('admin_user', JSON.stringify(res.user || res.data?.user || { username: form.username }))
+      // admin.js interceptor 已解包 Result，data = {token, userId, role}
+      localStorage.setItem('admin_token', data.token)
+      localStorage.setItem('admin_user', JSON.stringify({
+        id: data.userId,
+        username: form.username,
+        role: data.role
+      }))
       ElMessage.success('登录成功')
       router.push('/dashboard')
     } catch (err) {
-      ElMessage.error(err.response?.data?.message || '登录失败，请检查用户名和密码')
+      const msg = err.message || '登录失败，请检查用户名和密码'
+      ElMessage.error(msg)
     } finally {
       loading.value = false
     }

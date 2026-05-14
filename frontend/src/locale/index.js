@@ -16,10 +16,11 @@ const zh = {
     auth: {
         login: '登录',
         register: '注册',
-        username: '用户名',
+        account: '账号',
         password: '密码',
         nickname: '昵称',
         email: '邮箱',
+        phone: '手机号',
         confirmPassword: '确认密码',
         forgotPassword: '忘记密码？',
         noAccount: '还没有账号？',
@@ -32,10 +33,11 @@ const zh = {
         passwordMismatch: '两次密码不一致',
         passwordShort: '密码至少6位',
         placeholder: {
-            username: '请输入用户名',
+            account: '请输入用户名/手机号/邮箱',
             password: '请输入密码',
             nickname: '请输入昵称',
-            email: '请输入邮箱',
+            email: '请输入邮箱（选填）',
+            phone: '请输入手机号（选填）',
             confirmPassword: '请再次输入密码'
         }
     },
@@ -312,10 +314,11 @@ const en = {
     auth: {
         login: 'Login',
         register: 'Register',
-        username: 'Username',
+        account: 'Account',
         password: 'Password',
         nickname: 'Nickname',
         email: 'Email',
+        phone: 'Phone',
         confirmPassword: 'Confirm',
         forgotPassword: 'Forgot password?',
         noAccount: "Don't have an account?",
@@ -328,10 +331,11 @@ const en = {
         passwordMismatch: 'Passwords do not match',
         passwordShort: 'Password must be at least 6 characters',
         placeholder: {
-            username: 'Enter username',
+            account: 'Enter username/phone/email',
             password: 'Enter password',
             nickname: 'Enter nickname',
-            email: 'Enter email',
+            email: 'Enter email (optional)',
+            phone: 'Enter phone (optional)',
             confirmPassword: 'Enter password again'
         }
     },

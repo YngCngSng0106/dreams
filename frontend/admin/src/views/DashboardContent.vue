@@ -116,8 +116,8 @@ const opLabel = (op) => {
 
 const fetchStats = async () => {
   try {
-    const { data } = await admin.get('/admin/stats')
-    stats.value = data || {}
+    const statsData = await admin.get('/admin/stats')
+    stats.value = statsData || {}
   } catch (err) {
     ElMessage.error('获取统计数据失败')
   }
@@ -125,15 +125,15 @@ const fetchStats = async () => {
 
 const fetchUserGrowth = async () => {
   try {
-    const { data } = await admin.get('/admin/stats/user-growth', { params: { days: 30 } })
-    renderChart(userChartRef.value, '用户增长', data, '#409EFF')
+    const userData = await admin.get('/admin/stats/user-growth', { params: { days: 30 } })
+    renderChart(userChartRef.value, '用户增长', userData, '#409EFF')
   } catch (err) { /* ignore */ }
 }
 
 const fetchDreamGrowth = async () => {
   try {
-    const { data } = await admin.get('/admin/stats/dream-growth', { params: { days: 30 } } )
-    renderChart(dreamChartRef.value, '梦境增长', data, '#67C23A')
+    const dreamData = await admin.get('/admin/stats/dream-growth', { params: { days: 30 } } )
+    renderChart(dreamChartRef.value, '梦境增长', dreamData, '#67C23A')
   } catch (err) { /* ignore */ }
 }
 
@@ -155,8 +155,8 @@ const renderChart = (el, name, data, color) => {
 const fetchRecentLogs = async () => {
   logLoading.value = true
   try {
-    const { data } = await admin.get('/admin/logs', { params: { page: 1, size: 10 } })
-    recentLogs.value = data.content || data.list || data || []
+    const logData = await admin.get('/admin/logs', { params: { page: 1, size: 10 } })
+    recentLogs.value = logData.content || logData.list || logData || []
   } catch (err) { /* ignore */ } finally {
     logLoading.value = false
   }

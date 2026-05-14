@@ -14,7 +14,8 @@ public class Discussion {
     private String coverImage;
     private Long creatorId;
     private Long dreamId;
-    private Boolean isPreseted;
+    /** 使用 Integer 与数据库 TINYINT(1) 保持一致: 0=非预设, 1=预设 */
+    private Integer isPreseted;
     private Integer memberCount;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

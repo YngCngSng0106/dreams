@@ -280,7 +280,7 @@ public class AdminService {
             n.setSourceUserId(adminId);
             n.setRelatedId(relatedId);
             n.setContent(content);
-            n.setIsRead(false);
+            n.setIsRead(0);
             n.setIsDeleted(0);
             n.setCreateTime(LocalDateTime.now());
             notificationMapper.insert(n);

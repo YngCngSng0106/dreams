@@ -98,8 +98,8 @@ const resetForm = () => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/keywords')
-    tableData.value = data || []
+    const kwData = await admin.get('/admin/keywords')
+    tableData.value = kwData || []
   } catch (err) {
     ElMessage.error('获取关键词列表失败')
   } finally {
@@ -142,7 +142,7 @@ const handleSubmit = async () => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要删除关键词"${row.keyword}"吗？`, '警告', { type: 'warning' })
-    await admin.post(`/admin/keywords/${row.id}/delete`)
+    await admin.post(`/admin/keywords/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

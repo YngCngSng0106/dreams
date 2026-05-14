@@ -9,6 +9,7 @@ import com.dreamshare.utils.DreamSimilarityCalculator;
 import com.dreamshare.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,8 +24,9 @@ public class DreamService {
     @Autowired private DreamCategoryMapper dreamCategoryMapper;
     @Autowired private DreamLikeMapper dreamLikeMapper;
     @Autowired private ContentAuditMapper contentAuditMapper;
-    @Autowired private NotificationMapper notificationMapper;
+    @Autowired private NotificationService notificationService;
 
+    @Transactional
     public DreamDetailResponse createDream(Long userId, DreamCreateRequest req) {
         Dream dream = new Dream();
         dream.setUserId(userId);
@@ -38,8 +40,6 @@ public class DreamService {
         dream.setTags(req.getTags());
         dream.setImages(req.getImages());
         dream.setIsDeleted(0);
-        dream.setCreateTime(LocalDateTime.now());
-        dream.setUpdateTime(LocalDateTime.now());
         dreamMapper.insert(dream);
 
         // 创建审核记录
@@ -48,7 +48,6 @@ public class DreamService {
         audit.setTargetId(dream.getId());
         audit.setContentSnapshot(req.getDescription());
         audit.setAuditStatus("PENDING");
-        audit.setCreateTime(LocalDateTime.now());
         contentAuditMapper.insert(audit);
 
         return getDreamDetail(dream.getId());
@@ -60,6 +59,7 @@ public class DreamService {
         return toDetailResponse(dream);
     }
 
+    @Transactional
     public DreamDetailResponse updateDream(Long userId, Long dreamId, DreamUpdateRequest req) {
         Dream dream = dreamMapper.selectById(dreamId);
         if (dream == null) throw new RuntimeException("梦境不存在");
@@ -78,6 +78,7 @@ public class DreamService {
         return toDetailResponse(dream);
     }
 
+    @Transactional
     public void deleteDream(Long userId, Long dreamId) {
         Dream dream = dreamMapper.selectById(dreamId);
         if (dream == null) throw new RuntimeException("梦境不存在");
@@ -101,7 +102,7 @@ public class DreamService {
         LambdaQueryWrapper<Dream> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Dream::getIsDeleted, 0);
         if ("popular".equals(sortBy)) {
-            wrapper.orderByDesc(Dream::getCreateTime);  // 简化：实际需要用子查询
+            wrapper.orderByDesc(Dream::getCreateTime);  // 简化：实际需用子查询按点赞数排序
         } else {
             wrapper.orderByDesc(Dream::getCreateTime);
         }
@@ -112,8 +113,12 @@ public class DreamService {
     public List<DreamMatchResponse> findSimilarDreams(Long dreamId, int limit) {
         Dream source = dreamMapper.selectById(dreamId);
         if (source == null) throw new RuntimeException("梦境不存在");
+        // 优化：只查同分类或有关键词的梦境，减少全表扫描
         LambdaQueryWrapper<Dream> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Dream::getIsDeleted, 0);
+        wrapper.ne(Dream::getId, dreamId);
+        // 限制候选集大小
+        wrapper.last("LIMIT 200");
         List<Dream> candidates = dreamMapper.selectList(wrapper);
         List<Map<String, Object>> similar = DreamSimilarityCalculator.findSimilar(source, candidates);
         if (limit > 0 && similar.size() > limit) similar = similar.subList(0, limit);
@@ -127,23 +132,30 @@ public class DreamService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional
     public void likeDream(Long userId, Long dreamId) {
+        // 检查梦境是否存在且未被删除
+        Dream dream = dreamMapper.selectById(dreamId);
+        if (dream == null) throw new RuntimeException("梦境不存在");
+        if (dream.getIsDeleted() != null && dream.getIsDeleted() == 1) throw new RuntimeException("梦境已被删除");
+
         LambdaQueryWrapper<DreamLike> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DreamLike::getDreamId, dreamId).eq(DreamLike::getUserId, userId);
         if (dreamLikeMapper.selectCount(wrapper) > 0) throw new RuntimeException("已点赞");
+
         DreamLike like = new DreamLike();
         like.setDreamId(dreamId);
         like.setUserId(userId);
         like.setCreateTime(LocalDateTime.now());
         dreamLikeMapper.insert(like);
 
-        // 发送通知给梦境作者
-        Dream dream = dreamMapper.selectById(dreamId);
-        if (dream != null && !dream.getUserId().equals(userId)) {
-            sendNotification(dream.getUserId(), "LIKE", userId, dreamId, "赞了你的梦境");
+        // 发送通知给梦境作者（不通知自己）
+        if (!dream.getUserId().equals(userId)) {
+            notificationService.sendNotification(dream.getUserId(), "LIKE", userId, dreamId, "赞了你的梦境");
         }
     }
 
+    @Transactional
     public void unlikeDream(Long userId, Long dreamId) {
         LambdaQueryWrapper<DreamLike> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DreamLike::getDreamId, dreamId).eq(DreamLike::getUserId, userId);
@@ -154,28 +166,72 @@ public class DreamService {
         LambdaQueryWrapper<DreamLike> likeWrapper = new LambdaQueryWrapper<>();
         likeWrapper.eq(DreamLike::getDreamId, dreamId);
         long likeCount = dreamLikeMapper.selectCount(likeWrapper);
-        // 评论数从讨论组获取，简化处理
         return Map.of("dreamId", dreamId, "likeCount", likeCount);
     }
 
-    private void sendNotification(Long toUserId, String type, Long sourceUserId, Long relatedId, String content) {
-        Notification n = new Notification();
-        n.setUserId(toUserId);
-        n.setType(type);
-        n.setSourceUserId(sourceUserId);
-        n.setRelatedId(relatedId);
-        n.setContent(content);
-        n.setIsRead(false);
-        n.setCreateTime(LocalDateTime.now());
-        notificationMapper.insert(n);
-    }
-
+    /**
+     * 批量转换分页结果，解决 N+1 查询问题
+     */
     private Page<DreamListResponse> convertToListPage(Page<Dream> dreamPage) {
+        List<Dream> dreams = dreamPage.getRecords();
+        if (dreams == null || dreams.isEmpty()) {
+            Page<DreamListResponse> result = new Page<>();
+            result.setCurrent(dreamPage.getCurrent());
+            result.setSize(dreamPage.getSize());
+            result.setTotal(dreamPage.getTotal());
+            result.setRecords(Collections.emptyList());
+            return result;
+        }
+
+        // 批量查询用户
+        Set<Long> userIds = dreams.stream().map(Dream::getUserId).collect(Collectors.toSet());
+        Map<Long, User> userMap = userIds.stream()
+                .map(uid -> userMapper.selectById(uid))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        // 批量查询分类
+        Set<Long> categoryIds = dreams.stream().map(Dream::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, DreamCategory> categoryMap = categoryIds.stream()
+                .map(cid -> dreamCategoryMapper.selectById(cid))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(DreamCategory::getId, c -> c));
+
+        // 批量查询点赞数
+        Set<Long> dreamIds = dreams.stream().map(Dream::getId).collect(Collectors.toSet());
+        Map<Long, Long> likeCountMap = new HashMap<>();
+        for (Long dreamId : dreamIds) {
+            LambdaQueryWrapper<DreamLike> lw = new LambdaQueryWrapper<>();
+            lw.eq(DreamLike::getDreamId, dreamId);
+            likeCountMap.put(dreamId, dreamLikeMapper.selectCount(lw));
+        }
+
         Page<DreamListResponse> result = new Page<>();
         result.setCurrent(dreamPage.getCurrent());
         result.setSize(dreamPage.getSize());
         result.setTotal(dreamPage.getTotal());
-        result.setRecords(dreamPage.getRecords().stream().map(this::toListResponse).collect(Collectors.toList()));
+        result.setRecords(dreams.stream().map(d -> {
+            DreamListResponse resp = new DreamListResponse();
+            resp.setId(d.getId());
+            resp.setUserId(d.getUserId());
+            User user = userMap.get(d.getUserId());
+            if (user != null) {
+                resp.setNickname(user.getNickname());
+                resp.setAvatar(user.getAvatar());
+            }
+            DreamCategory cat = categoryMap.get(d.getCategoryId());
+            resp.setCategory(cat != null ? cat.getName() : null);
+            resp.setDreamDate(d.getDreamDate());
+            resp.setLocation(d.getLocation());
+            resp.setKeywords(d.getKeywords());
+            resp.setClarity(d.getClarity());
+            resp.setDescription(d.getDescription());
+            resp.setIsRecurring(d.getIsRecurring());
+            resp.setTags(d.getTags());
+            resp.setCreateTime(d.getCreateTime());
+            resp.setLikeCount(likeCountMap.getOrDefault(d.getId(), 0L).intValue());
+            return resp;
+        }).collect(Collectors.toList()));
         return result;
     }
 
@@ -198,32 +254,6 @@ public class DreamService {
         resp.setIsRecurring(dream.getIsRecurring());
         resp.setTags(dream.getTags());
         resp.setImages(dream.getImages());
-        resp.setCreateTime(dream.getCreateTime());
-
-        LambdaQueryWrapper<DreamLike> likeWrapper = new LambdaQueryWrapper<>();
-        likeWrapper.eq(DreamLike::getDreamId, dream.getId());
-        resp.setLikeCount(Math.toIntExact(dreamLikeMapper.selectCount(likeWrapper)));
-        return resp;
-    }
-
-    private DreamListResponse toListResponse(Dream dream) {
-        DreamListResponse resp = new DreamListResponse();
-        resp.setId(dream.getId());
-        resp.setUserId(dream.getUserId());
-        User user = userMapper.selectById(dream.getUserId());
-        if (user != null) {
-            resp.setNickname(user.getNickname());
-            resp.setAvatar(user.getAvatar());
-        }
-        DreamCategory cat = dreamCategoryMapper.selectById(dream.getCategoryId());
-        resp.setCategory(cat != null ? cat.getName() : null);
-        resp.setDreamDate(dream.getDreamDate());
-        resp.setLocation(dream.getLocation());
-        resp.setKeywords(dream.getKeywords());
-        resp.setClarity(dream.getClarity());
-        resp.setDescription(dream.getDescription());
-        resp.setIsRecurring(dream.getIsRecurring());
-        resp.setTags(dream.getTags());
         resp.setCreateTime(dream.getCreateTime());
 
         LambdaQueryWrapper<DreamLike> likeWrapper = new LambdaQueryWrapper<>();

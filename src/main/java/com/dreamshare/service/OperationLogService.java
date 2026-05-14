@@ -1,6 +1,6 @@
 package com.dreamshare.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dreamshare.entity.OperationLog;
 import com.dreamshare.mapper.OperationLogMapper;
@@ -23,11 +23,11 @@ public class OperationLogService extends ServiceImpl<OperationLogMapper, Operati
     }
     
     public java.util.List<OperationLog> query(Long adminId, String moduleName, String operation) {
-        QueryWrapper<OperationLog> qw = new QueryWrapper<>();
-        if (adminId != null) qw.eq("admin_id", adminId);
-        if (moduleName != null && !moduleName.isEmpty()) qw.like("module_name", moduleName);
-        if (operation != null && !operation.isEmpty()) qw.eq("operation", operation);
-        qw.orderByDesc("create_time");
+        LambdaQueryWrapper<OperationLog> qw = new LambdaQueryWrapper<>();
+        if (adminId != null) qw.eq(OperationLog::getAdminId, adminId);
+        if (moduleName != null && !moduleName.isEmpty()) qw.like(OperationLog::getModuleName, moduleName);
+        if (operation != null && !operation.isEmpty()) qw.eq(OperationLog::getOperation, operation);
+        qw.orderByDesc(OperationLog::getCreateTime);
         return this.list(qw);
     }
 }

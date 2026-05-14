@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +23,7 @@ public class NotificationService {
         LambdaQueryWrapper<Notification> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Notification::getUserId, userId);
         if (type != null) wrapper.eq(Notification::getType, type);
-        if (isRead != null) wrapper.eq(Notification::getIsRead, isRead);
+        if (isRead != null) wrapper.eq(Notification::getIsRead, isRead ? 1 : 0);
         wrapper.orderByDesc(Notification::getCreateTime);
         Page<Notification> nPage = notificationMapper.selectPage(new Page<>(page, pageSize), wrapper);
         return convertToResponsePage(nPage);
@@ -30,7 +31,7 @@ public class NotificationService {
 
     public long getUnreadCount(Long userId) {
         LambdaQueryWrapper<Notification> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Notification::getUserId, userId).eq(Notification::getIsRead, false);
+        wrapper.eq(Notification::getUserId, userId).eq(Notification::getIsRead, 0);
         return notificationMapper.selectCount(wrapper);
     }
 
@@ -38,15 +39,15 @@ public class NotificationService {
         Notification n = notificationMapper.selectById(notificationId);
         if (n == null) throw new RuntimeException("通知不存在");
         if (!n.getUserId().equals(userId)) throw new RuntimeException("无权操作");
-        n.setIsRead(true);
+        n.setIsRead(1);
         notificationMapper.updateById(n);
     }
 
     public void markAllRead(Long userId) {
         LambdaQueryWrapper<Notification> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Notification::getUserId, userId).eq(Notification::getIsRead, false);
+        wrapper.eq(Notification::getUserId, userId).eq(Notification::getIsRead, 0);
         Notification update = new Notification();
-        update.setIsRead(true);
+        update.setIsRead(1);
         notificationMapper.update(update, wrapper);
     }
 
@@ -57,7 +58,8 @@ public class NotificationService {
         n.setSourceUserId(sourceUserId);
         n.setRelatedId(relatedId);
         n.setContent(content);
-        n.setIsRead(false);
+        n.setIsRead(0);
+        n.setIsDeleted(0);
         n.setCreateTime(java.time.LocalDateTime.now());
         notificationMapper.insert(n);
         // WebSocket推送
@@ -78,11 +80,11 @@ public class NotificationService {
             resp.setId(n.getId());
             resp.setType(n.getType());
             resp.setSourceUserId(n.getSourceUserId());
-            User src = userMapper.selectById(n.getSourceUserId());
-            resp.setSourceNickname(src != null ? src.getNickname() : "未知");
+            User src = n.getSourceUserId() != null ? userMapper.selectById(n.getSourceUserId()) : null;
+            resp.setSourceNickname(src != null ? src.getNickname() : "系统");
             resp.setRelatedId(n.getRelatedId());
             resp.setContent(n.getContent());
-            resp.setIsRead(n.getIsRead());
+            resp.setIsRead(n.getIsRead() != null && n.getIsRead() == 1);
             resp.setCreateTime(n.getCreateTime());
             return resp;
         }).collect(Collectors.toList()));

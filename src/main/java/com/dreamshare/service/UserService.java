@@ -29,6 +29,7 @@ public class UserService {
         if (req.getNickname() != null) user.setNickname(req.getNickname());
         if (req.getAvatar() != null) user.setAvatar(req.getAvatar());
         if (req.getGender() != null) user.setGender(req.getGender());
+        if (req.getPhone() != null) user.setPhone(req.getPhone());
         if (req.getBio() != null) user.setBio(req.getBio());
         userMapper.updateById(user);
         return toResponse(user);
@@ -44,6 +45,7 @@ public class UserService {
         resp.setNickname(user.getNickname());
         resp.setAvatar(user.getAvatar());
         resp.setGender(user.getGender());
+        resp.setPhone(user.getPhone());
         resp.setBio(user.getBio());
 
         // 梦境数

@@ -92,7 +92,7 @@ const truncate = (str, len) => {
 
 const fetchCategories = async () => {
   try {
-    const { data } = await admin.get('/admin/categories')
+    const data = await admin.get('/admin/categories')
     categoryList.value = data || []
   } catch (e) { /* ignore */ }
 }
@@ -100,19 +100,19 @@ const fetchCategories = async () => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/dreams', {
+    const data = await admin.get('/admin/dreams', {
       params: {
         page: pagination.page,
         size: pagination.size,
-        keyword: searchForm.keyword,
-        categoryId: searchForm.categoryId !== '' ? searchForm.categoryId : undefined,
-        userId: searchForm.userId || undefined
+        keyword: searchForm.keyword || undefined,
+        categoryId: searchForm.categoryId !== '' ? parseInt(searchForm.categoryId) : undefined,
+        userId: searchForm.userId ? parseInt(searchForm.userId) : undefined
       }
     })
     tableData.value = data.records || data.content || data.list || []
     pagination.total = data.total || data.totalElements || 0
   } catch (err) {
-    ElMessage.error('获取梦境列表失败')
+    ElMessage.error(err.message || '获取梦境列表失败')
   } finally {
     loading.value = false
   }
@@ -131,7 +131,7 @@ const handlePinUnpin = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要${isPin ? '置顶' : '取消置顶'}该梦境吗？`, '确认', { type: 'info' })
     const url = isPin ? `/admin/dreams/${row.id}/pin` : `/admin/dreams/${row.id}/unpin`
-    await admin.post(url)
+    await admin.post(url, {})
     ElMessage.success(`${isPin ? '置顶' : '取消置顶'}成功`)
     fetchData()
   } catch (e) {
@@ -142,7 +142,7 @@ const handlePinUnpin = async (row) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确定要删除该梦境吗？此操作不可恢复！', '警告', { type: 'warning' })
-    await admin.post(`/admin/dreams/${row.id}/delete`)
+    await admin.post(`/admin/dreams/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {

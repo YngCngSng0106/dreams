@@ -6,6 +6,7 @@ public class UserProfileResponse {
     private String nickname;
     private String avatar;
     private Integer gender;
+    private String phone;
     private String bio;
     private Long dreamCount;
     private Long discussionCount;

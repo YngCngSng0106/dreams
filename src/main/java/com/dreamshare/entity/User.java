@@ -14,9 +14,10 @@ public class User {
     private String nickname;
     private String avatar;
     private String email;
+    private String phone;     // 手机号
     private Integer gender;
     private String bio;
-    private Integer role; // 0=user, 1=admin
+    private Integer role;     // 0=user, 1=admin
     private Integer isBanned; // 0=normal, 1=banned
     @TableLogic
     private Integer isDeleted;

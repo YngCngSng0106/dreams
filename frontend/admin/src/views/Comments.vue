@@ -71,7 +71,7 @@ const truncate = (str, len) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const { data } = await admin.get('/admin/comments', {
+    const commentsData = await admin.get('/admin/comments', {
       params: {
         page: pagination.page,
         size: pagination.size,
@@ -97,7 +97,7 @@ const handleHideUnhide = async (row) => {
   try {
     await ElMessageBox.confirm(`确定要${isHide ? '隐藏' : '取消隐藏'}该评论吗？`, '确认', { type: 'info' })
     const url = isHide ? `/admin/comments/${row.id}/hide` : `/admin/comments/${row.id}/unhide`
-    await admin.post(url)
+    await admin.post(url, {})
     ElMessage.success(`${isHide ? '隐藏' : '取消隐藏'}成功`)
     fetchData()
   } catch (e) {
@@ -108,7 +108,7 @@ const handleHideUnhide = async (row) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确定要删除该评论吗？此操作不可恢复！', '警告', { type: 'warning' })
-    await admin.post(`/admin/comments/${row.id}/delete`)
+    await admin.post(`/admin/comments/${row.id}/delete`, {})
     ElMessage.success('删除成功')
     fetchData()
   } catch (e) {
