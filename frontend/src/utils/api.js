@@ -29,7 +29,7 @@ export const dreamApi = {
     myList: (page = 1, pageSize = 20, categoryId, isRecurring) => {
         let url = '/api/dreams?page=' + page + '&pageSize=' + pageSize;
         if (categoryId) url += '&categoryId=' + categoryId;
-        if (isRecurring !== null) url += '&isRecurring=' + isRecurring;
+        if (isRecurring != null) url += '&isRecurring=' + isRecurring;
         return request({ url });
     },
     feed: (page = 1, pageSize = 20, sortBy = 'newest') => 
@@ -96,7 +96,7 @@ export const notificationApi = {
     list: (page = 1, pageSize = 20, type, isRead) => {
         let url = '/api/notifications?page=' + page + '&pageSize=' + pageSize;
         if (type) url += '&type=' + type;
-        if (isRead !== null) url += '&isRead=' + isRead;
+        if (isRead != null) url += '&isRead=' + isRead;
         return request({ url });
     },
     unreadCount: () => request({ url: '/api/notifications/unread-count' }),
