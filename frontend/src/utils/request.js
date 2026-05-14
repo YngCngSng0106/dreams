@@ -1,4 +1,4 @@
-const BASE_URL = 'http://10.245.181.47:8080';
+const BASE_URL = 'http://10.245.181.124:8080';
 
 export function request(options) {
     const { url, method = 'GET', data = {}, header = {}, silent } = options;
