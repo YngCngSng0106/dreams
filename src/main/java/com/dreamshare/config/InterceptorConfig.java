@@ -1,6 +1,7 @@
 package com.dreamshare.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,6 +11,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
     private JwtInterceptor jwtInterceptor;
+
+    @Autowired
+    private AdminInterceptor adminInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -30,5 +34,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
                         // 管理后台 (自行校验)
                         "/api/admin/**"
                 );
+
+        // Admin paths use AdminInterceptor for JWT + role check
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/api/admin/**");
     }
 }

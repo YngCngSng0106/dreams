@@ -11,9 +11,8 @@ import com.dreamshare.mapper.UserSettingsMapper;
 import com.dreamshare.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
+import org.mindrot.jbcrypt.BCrypt;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,8 +77,7 @@ public class AuthService {
         }
 
         if (user == null) throw new RuntimeException("用户不存在");
-        String md5Pass = DigestUtils.md5DigestAsHex(req.getPassword().getBytes(StandardCharsets.UTF_8));
-        if (!user.getPassword().equals(md5Pass)) throw new RuntimeException("密码错误");
+        if (!BCrypt.checkpw(req.getPassword(), user.getPassword())) throw new RuntimeException("密码错误");
         if (user.getIsBanned() != null && user.getIsBanned() == 1) throw new RuntimeException("账号已被封禁，无法登录");
 
         LoginResponse resp = new LoginResponse();
@@ -109,7 +107,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(req.getUsername());
         user.setNickname(req.getNickname());
-        user.setPassword(DigestUtils.md5DigestAsHex(req.getPassword().getBytes(StandardCharsets.UTF_8)));
+        user.setPassword(BCrypt.hashpw(req.getPassword(), BCrypt.gensalt()));
         user.setEmail(req.getEmail());
         user.setPhone(req.getPhone() != null ? req.getPhone().trim() : null);
         user.setGender(0);
@@ -154,7 +152,7 @@ public class AuthService {
         }
 
         // 生成6位验证码
-        String code = String.format("%06d", new java.util.Random().nextInt(1000000));
+        String code = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
 
         // 写入缓存，有效期5分钟，60秒后可重新发送
         codeCache.put(email, new VerificationEntry(code, System.currentTimeMillis() + VALIDITY_MS));
@@ -185,7 +183,7 @@ public class AuthService {
         }
 
         // 更新密码
-        user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8)));
+        user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
         user.setUpdateTime(LocalDateTime.now());
         userMapper.updateById(user);
 

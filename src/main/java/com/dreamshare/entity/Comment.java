@@ -15,6 +15,8 @@ public class Comment {
     private String content;
     private Integer likeCount;
     private Integer isHidden; // 0=visible, 1=hidden
+    /** 审核状态: PENDING/PASSED/REJECTED */
+    private String auditStatus;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableLogic

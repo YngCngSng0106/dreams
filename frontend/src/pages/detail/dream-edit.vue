@@ -1,216 +1,213 @@
-<template>
-    <view class="edit-page">
-        <view class="header-bar">
-            <text class="title">{{ $t('detail.editTitle') }}</text>
-            <text class="lang-btn" @click="toggleLang">{{ currentLang === 'zh' ? 'EN' : '中文' }}</text>
-        </view>
-        <view class="form-container" v-if="dream">
-            <view class="form-item">
-                <text class="label">{{ $t('detail.locationLabel') }}</text>
-                <input class="input" v-model="form.location" :placeholder="$t('record.placeholder.location')" />
-            </view>
-            
-            <view class="form-item">
-                <text class="label">{{ $t('detail.keywordsLabel') }}</text>
-                <input class="input" v-model="form.keywords" :placeholder="$t('record.placeholder.keywords')" />
-            </view>
-            
-            <view class="form-item">
-                <text class="label">{{ $t('detail.clarityLabel') }}</text>
-                <view class="clarity-picker">
-                    <view class="clarity-item" :class="{active: form.clarity >= i}" v-for="i in 5" :key="i" @click="form.clarity = i">
-                        ⭐
-                    </view>
-                </view>
-            </view>
-            
-            <view class="form-item">
-                <text class="label">{{ $t('detail.descLabel') }}</text>
-                <textarea class="textarea" v-model="form.description" :placeholder="$t('record.placeholder.description')" maxlength="2000" />
-            </view>
-            
-            <view class="form-item">
-                <text class="label">{{ $t('detail.recurringLabel') }}</text>
-                <switch :checked="form.isRecurring" @change="form.isRecurring = $event.detail.value" color="#6C5CE7" />
-            </view>
-            
-            <button class="btn-primary submit-btn" @click="saveDream" :loading="saving">{{ $t('detail.saveChanges') }}</button>
-            <button class="btn-danger delete-btn" @click="deleteDream">{{ $t('detail.deleteDream') }}</button>
-        </view>
-    </view>
-</template>
-
-<script>
-import { dreamApi } from '@/utils/api';
-import { requireLogin, getUserId } from '@/utils/auth';
-import { setLocale } from '@/locale';
-
-export default {
-    data() {
-        return {
-            dreamId: 0,
-            dream: null,
-            form: {},
-            saving: false,
-            currentLang: 'zh'
-        };
-    },
-    async onLoad(options) {
-        if (!requireLogin()) return;
-        this.currentLang = uni.getStorageSync('locale') || 'zh';
-        this.dreamId = parseInt(options.id) || 0;
-        try {
-            this.dream = await dreamApi.detail(this.dreamId);
-            const myId = getUserId();
-            if (this.dream.userId !== myId) {
-                uni.showToast({ title: this.$t('detail.noAuthEdit'), icon: 'none' });
-                setTimeout(() => uni.navigateBack(), 1500);
-                return;
-            }
-            this.form = {
-                location: this.dream.location || '',
-                keywords: this.dream.keywords || '',
-                clarity: this.dream.clarity || 3,
-                description: this.dream.description || '',
-                isRecurring: this.dream.isRecurring ? true : false
-            };
-        } catch (e) {
-            console.error('Load dream failed:', e);
-        }
-    },
-    methods: {
-        toggleLang() {
-            this.currentLang = this.currentLang === 'zh' ? 'en' : 'zh';
-            setLocale(this.currentLang);
-        },
-        
-        async saveDream() {
-            if (!this.form.description.trim()) {
-                uni.showToast({ title: this.$t('detail.fillDesc'), icon: 'none' });
-                return;
-            }
-            this.saving = true;
-            try {
-                const submitData = {...this.form, isRecurring: this.form.isRecurring ? 1 : 0};
-                await dreamApi.update(this.dreamId, submitData);
-                uni.showToast({ title: this.$t('detail.saveSuccess'), icon: 'success' });
-                setTimeout(() => uni.navigateBack(), 1500);
-            } catch (e) {
-                console.error('Save failed:', e);
-            } finally {
-                this.saving = false;
-            }
-        },
-        
-        async deleteDream() {
-            uni.showModal({
-                title: this.$t('detail.delete'),
-                content: this.$t('detail.deleteConfirm'),
-                success: async (res) => {
-                    if (res.confirm) {
-                        try {
-                            await dreamApi.delete(this.dreamId);
-                            uni.showToast({ title: this.$t('detail.deleted'), icon: 'success' });
-                            setTimeout(() => uni.navigateBack(), 1500);
-                        } catch (e) {
-                            console.error('Delete failed:', e);
-                        }
-                    }
-                }
-            });
-        }
-    }
-};
-</script>
-
-<style lang="scss" scoped>
-.edit-page {
-    min-height: 100vh;
-    background: #F8F9FE;
-    padding: 24rpx;
-    padding-top: calc(24rpx + env(safe-area-inset-top));
-}
-
-.header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-    
-    .title {
-        font-size: 36rpx;
-        font-weight: 700;
-        color: #2D3436;
-    }
-    
-    .lang-btn {
-        font-size: 24rpx;
-        color: #6C5CE7;
-        background: rgba(108, 92, 231, 0.1);
-        padding: 8rpx 16rpx;
-        border-radius: 24rpx;
-    }
-}
-
-.form-container {
-    .form-item {
-        background: #FFFFFF;
-        border-radius: 24rpx;
-        padding: 24rpx;
-        margin-bottom: 20rpx;
-        
-        .label {
-            font-size: 26rpx;
-            color: #636E72;
-            margin-bottom: 12rpx;
-            display: block;
-        }
-        
-        .input {
-            width: 100%;
-            font-size: 28rpx;
-            color: #2D3436;
-            background: #F8F9FE;
-            border-radius: 12rpx;
-            padding: 16rpx;
-        }
-        
-        .textarea {
-            width: 100%;
-            min-height: 240rpx;
-            font-size: 28rpx;
-            color: #2D3436;
-            background: #F8F9FE;
-            border-radius: 12rpx;
-            padding: 16rpx;
-        }
-    }
-    
-    .clarity-picker {
-        display: flex;
-        gap: 16rpx;
-        
-        .clarity-item {
-            font-size: 48rpx;
-            color: #E0E0E0;
-            &.active { color: #FDCB6E; }
-        }
-    }
-}
-
-.submit-btn {
-    width: 100%;
-    margin-top: 40rpx;
-    font-size: 32rpx;
-}
-
-.delete-btn {
-    width: 100%;
-    margin-top: 20rpx;
-    background: #FFFFFF;
-    color: #E17055;
-    border: 2rpx solid #E17055;
-    border-radius: 48rpx;
-    font-size: 28rpx;
-}
-</style>
+     1|<template>
+     2|    <view class="edit-page">
+     3|        <view class="header-bar">
+     4|            <text class="title">{{ $t('detail.editTitle') }}</text>
+     5|            <LangSwitch />
+     6|        </view>
+     7|        <view class="form-container" v-if="dream">
+     8|            <view class="form-item">
+     9|                <text class="label">{{ $t('detail.locationLabel') }}</text>
+    10|                <input class="input" v-model="form.location" :placeholder="$t('record.placeholder.location')" />
+    11|            </view>
+    12|            
+    13|            <view class="form-item">
+    14|                <text class="label">{{ $t('detail.keywordsLabel') }}</text>
+    15|                <input class="input" v-model="form.keywords" :placeholder="$t('record.placeholder.keywords')" />
+    16|            </view>
+    17|            
+    18|            <view class="form-item">
+    19|                <text class="label">{{ $t('detail.clarityLabel') }}</text>
+    20|                <view class="clarity-picker">
+    21|                    <view class="clarity-item" :class="{active: form.clarity >= i}" v-for="i in 5" :key="i" @click="form.clarity = i">
+    22|                        ⭐
+    23|                    </view>
+    24|                </view>
+    25|            </view>
+    26|            
+    27|            <view class="form-item">
+    28|                <text class="label">{{ $t('detail.descLabel') }}</text>
+    29|                <textarea class="textarea" v-model="form.description" :placeholder="$t('record.placeholder.description')" maxlength="2000" />
+    30|            </view>
+    31|            
+    32|            <view class="form-item">
+    33|                <text class="label">{{ $t('detail.recurringLabel') }}</text>
+    34|                <switch :checked="form.isRecurring" @change="form.isRecurring = $event.detail.value" color="#6C5CE7" />
+    35|            </view>
+    36|            
+    37|            <button class="btn-primary submit-btn" @click="saveDream" :loading="saving">{{ $t('detail.saveChanges') }}</button>
+    38|            <button class="btn-danger delete-btn" @click="deleteDream">{{ $t('detail.deleteDream') }}</button>
+    39|        </view>
+    40|    </view>
+    41|</template>
+    42|
+    43|<script>
+    44|import { dreamApi } from '@/utils/api';
+    45|import { requireLogin } from '@/utils/auth';
+    46|import { useUserStore } from '@/store/user';
+    47|import { useSettingsStore } from '@/store/settings';
+    48|
+    49|export default {
+    50|    components: {
+    51|        LangSwitch: () => import('@/components/LangSwitch.vue')
+    52|    },
+    53|    setup() {
+    54|        const settingsStore = useSettingsStore();
+    55|        return { settingsStore };
+    56|    },
+    57|    data() {
+    58|        return {
+    59|            dreamId: 0,
+    60|            dream: null,
+    61|            form: {},
+    62|            saving: false
+    63|        };
+    64|    },
+    65|    async onLoad(options) {
+    66|        if (!requireLogin()) return;
+    67|        this.dreamId = parseInt(options.id) || 0;
+    68|        try {
+    69|            this.dream = await dreamApi.detail(this.dreamId);
+    70|            const myId = useUserStore().userId;
+    71|            if (this.dream.userId !== myId) {
+    72|                uni.showToast({ title: this.$t('detail.noAuthEdit'), icon: 'none' });
+    73|                setTimeout(() => uni.navigateBack(), 1500);
+    74|                return;
+    75|            }
+    76|            this.form = {
+    77|                location: this.dream.location || '',
+    78|                keywords: this.dream.keywords || '',
+    79|                clarity: this.dream.clarity || 3,
+    80|                description: this.dream.description || '',
+    81|                isRecurring: this.dream.isRecurring ? true : false
+    82|            };
+    83|        } catch (e) {
+    84|            console.error('Load dream failed:', e);
+    85|        }
+    86|    },
+    87|    methods: {
+    88|        async saveDream() {
+    89|            if (!this.form.description.trim()) {
+    90|                uni.showToast({ title: this.$t('detail.fillDesc'), icon: 'none' });
+    91|                return;
+    92|            }
+    93|            this.saving = true;
+    94|            try {
+    95|                const submitData = {...this.form, isRecurring: this.form.isRecurring ? 1 : 0};
+    96|                await dreamApi.update(this.dreamId, submitData);
+    97|                uni.showToast({ title: this.$t('detail.saveSuccess'), icon: 'success' });
+    98|                setTimeout(() => uni.navigateBack(), 1500);
+    99|            } catch (e) {
+   100|                console.error('Save failed:', e);
+   101|            } finally {
+   102|                this.saving = false;
+   103|            }
+   104|        },
+   105|        
+   106|        async deleteDream() {
+   107|            uni.showModal({
+   108|                title: this.$t('detail.delete'),
+   109|                content: this.$t('detail.deleteConfirm'),
+   110|                success: async (res) => {
+   111|                    if (res.confirm) {
+   112|                        try {
+   113|                            await dreamApi.delete(this.dreamId);
+   114|                            uni.showToast({ title: this.$t('detail.deleted'), icon: 'success' });
+   115|                            setTimeout(() => uni.navigateBack(), 1500);
+   116|                        } catch (e) {
+   117|                            console.error('Delete failed:', e);
+   118|                        }
+   119|                    }
+   120|                }
+   121|            });
+   122|        }
+   123|    }
+   124|};
+   125|</script>
+   126|
+   127|<style lang="scss" scoped>
+   128|.edit-page {
+   129|    min-height: 100vh;
+   130|    padding: 24rpx;
+   131|    padding-top: calc(24rpx + env(safe-area-inset-top));
+   132|}
+   133|
+   134|.header-bar {
+   135|    display: flex;
+   136|    justify-content: space-between;
+   137|    align-items: center;
+   138|    margin-bottom: 24rpx;
+   139|    
+   140|    .title {
+   141|        font-size: 36rpx;
+   142|        font-weight: 700;
+   143|        color: $text-primary;
+   144|    }
+   145|    
+   146|    }
+   147|
+   148|.form-container {
+   149|    .form-item {
+   150|        background: $glass-card-bg;
+   151|        backdrop-filter: blur(20px);
+   152|        -webkit-backdrop-filter: blur(20px);
+   153|        border: 1rpx solid $glass-card-bg-hover;
+   154|        border-radius: 24rpx;
+   155|        padding: 24rpx;
+   156|        margin-bottom: 20rpx;
+   157|        
+   158|        .label {
+   159|            font-size: 26rpx;
+   160|            color: $text-secondary;
+   161|            margin-bottom: 12rpx;
+   162|            display: block;
+   163|        }
+   164|        
+   165|        .input {
+   166|            width: 100%;
+   167|            font-size: 28rpx;
+   168|            color: $text-primary;
+   169|            background: $glass-card-bg-light;
+   170|            border-radius: 12rpx;
+   171|            padding: 16rpx;
+   172|        }
+   173|        
+   174|        .textarea {
+   175|            width: 100%;
+   176|            min-height: 240rpx;
+   177|            font-size: 28rpx;
+   178|            color: $text-primary;
+   179|            background: $glass-card-bg-light;
+   180|            border-radius: 12rpx;
+   181|            padding: 16rpx;
+   182|        }
+   183|    }
+   184|    
+   185|    .clarity-picker {
+   186|        display: flex;
+   187|        gap: 16rpx;
+   188|        
+   189|        .clarity-item {
+   190|            font-size: 48rpx;
+   191|            color: $glass-border-active;
+   192|            &.active { color: #FDCB6E; }
+   193|        }
+   194|    }
+   195|}
+   196|
+   197|.submit-btn {
+   198|    width: 100%;
+   199|    margin-top: 40rpx;
+   200|    font-size: 32rpx;
+   201|}
+   202|
+   203|.delete-btn {
+   204|    width: 100%;
+   205|    margin-top: 20rpx;
+   206|    background: $glass-card-bg;
+   207|    color: #E17055;
+   208|    border: 2rpx solid #E17055;
+   209|    border-radius: 48rpx;
+   210|    font-size: 28rpx;
+   211|}
+   212|</style>
+   213|

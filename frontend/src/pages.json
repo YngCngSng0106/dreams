@@ -122,15 +122,15 @@
     "globalStyle": {
         "navigationBarTextStyle": "white",
         "navigationBarTitleText": "梦境分享",
-        "navigationBarBackgroundColor": "#6C5CE7",
-        "backgroundColor": "#F8F9FE",
+		"navigationBarBackgroundColor": "#0D1B2A",
+		"backgroundColor": "#0D1B2A",
         "backgroundTextStyle": "light"
     },
     "tabBar": {
         "custom": true,
-        "color": "#B2BEC3",
-        "selectedColor": "#6C5CE7",
-        "backgroundColor": "#FFFFFF",
+        "color": "rgba(255,255,255,0.5)",
+        "selectedColor": "#A29BFE",
+		"backgroundColor": "rgba(13, 27, 42, 0.85)",
         "borderStyle": "white",
         "list": [
             {

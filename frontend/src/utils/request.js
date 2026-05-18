@@ -1,11 +1,13 @@
+import { useUserStore } from '@/store/user';
+
 const BASE_URL = 'http://10.245.181.124:8080';
 
 export function request(options) {
     const { url, method = 'GET', data = {}, header = {}, silent } = options;
 
-    const token = uni.getStorageSync('token');
-    if (token) {
-        header['Authorization'] = 'Bearer ' + token;
+    const userStore = useUserStore();
+    if (userStore.token) {
+        header['Authorization'] = 'Bearer ' + userStore.token;
     }
     header['Content-Type'] = 'application/json';
 
@@ -46,11 +48,10 @@ export function request(options) {
 }
 
 function handleUnauth(silent) {
-    const token = uni.getStorageSync('token');
-    if (token) {
+    const userStore = useUserStore();
+    if (userStore.token) {
         // 已登录但token失效 -> 清除并跳转
-        uni.removeStorageSync('token');
-        uni.removeStorageSync('userId');
+        userStore.logout();
         if (!silent) {
             uni.showToast({ title: '请重新登录', icon: 'none' });
             setTimeout(() => {
@@ -62,7 +63,7 @@ function handleUnauth(silent) {
 }
 
 export function uploadFile(filePath, name = 'file') {
-    const token = uni.getStorageSync('token');
+    const userStore = useUserStore();
     return new Promise((resolve, reject) => {
         uni.showLoading({ title: '上传中...', mask: true });
 
@@ -71,7 +72,7 @@ export function uploadFile(filePath, name = 'file') {
             filePath,
             name,
             header: {
-                'Authorization': token ? 'Bearer ' + token : ''
+                'Authorization': userStore.token ? 'Bearer ' + userStore.token : ''
             },
             success: (res) => {
                 uni.hideLoading();

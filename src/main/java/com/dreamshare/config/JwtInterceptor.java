@@ -74,6 +74,10 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (uri.matches("/api/users/\\d+(/dreams|/discussions)?")) {
             return true;
         }
+        // 公开粉丝/关注列表
+        if (uri.matches("/api/follow/(followers|following)/\\d+")) {
+            return true;
+        }
         return false;
     }
 }

@@ -1,26 +1,33 @@
+import { useUserStore } from '@/store/user';
+
 export function getToken() {
-    return uni.getStorageSync('token');
+    const userStore = useUserStore();
+    return userStore.token;
 }
 
 export function setToken(token) {
-    uni.setStorageSync('token', token);
+    const userStore = useUserStore();
+    userStore.setToken(token);
 }
 
 export function getUserId() {
-    return uni.getStorageSync('userId');
+    const userStore = useUserStore();
+    return userStore.userId;
 }
 
 export function setUserId(userId) {
-    uni.setStorageSync('userId', userId);
+    const userStore = useUserStore();
+    userStore.setUserId(userId);
 }
 
 export function clearAuth() {
-    uni.removeStorageSync('token');
-    uni.removeStorageSync('userId');
+    const userStore = useUserStore();
+    userStore.logout();
 }
 
 export function isLoggedIn() {
-    return !!getToken();
+    const userStore = useUserStore();
+    return userStore.isLoggedIn;
 }
 
 export function requireLogin() {

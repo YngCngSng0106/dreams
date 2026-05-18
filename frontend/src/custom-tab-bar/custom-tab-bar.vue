@@ -9,10 +9,15 @@
 
 <script>
 import { zh, en } from '@/locale/index';
+import { useSettingsStore } from '@/store/settings';
 
 const i18nMessages = { zh, en };
 
 export default {
+    setup() {
+        const settingsStore = useSettingsStore();
+        return { settingsStore };
+    },
     data() {
         return {
             currentPage: '',
@@ -23,7 +28,7 @@ export default {
                 { pagePath: 'pages/message/message', icon: '🔔', textKey: 'tab.message' },
                 { pagePath: 'pages/mine/mine', icon: '👤', textKey: 'tab.mine' }
             ],
-            locale: uni.getStorageSync('locale') || 'zh'
+            locale: this.settingsStore ? this.settingsStore.language : (uni.getStorageSync('locale') || 'zh')
         };
     },
     methods: {
@@ -50,10 +55,10 @@ export default {
                 this.currentPage = current.route;
             }
             // Also refresh locale in case it changed
-            this.locale = uni.getStorageSync('locale') || 'zh';
+            this.locale = this.settingsStore.language;
         },
         onLocaleChange() {
-            this.locale = uni.getStorageSync('locale') || 'zh';
+            this.locale = this.settingsStore.language;
         }
     },
     mounted() {
@@ -70,15 +75,17 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 .tabbar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     height: 100rpx;
-    background: #FFFFFF;
-    border-top: 2rpx solid #F0F0F0;
+    background: $glass-tabbar-bg;
+    backdrop-filter: blur($glass-blur);
+    -webkit-backdrop-filter: blur($glass-blur);
+    border-top: 1rpx solid $glass-card-bg;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -102,12 +109,12 @@ export default {
 
 .tabbar-text {
     font-size: 20rpx;
-    color: #B2BEC3;
+    color: $text-tertiary;
     margin-top: 4rpx;
 }
 
 .tabbar-text.active {
-    color: #6C5CE7;
+    color: #A29BFE;
     font-weight: 600;
 }
 </style>

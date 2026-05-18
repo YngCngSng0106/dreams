@@ -101,6 +101,8 @@ public class DreamService {
     public Page<DreamListResponse> getFeed(int page, int pageSize, String sortBy, Long categoryId) {
         LambdaQueryWrapper<Dream> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Dream::getIsDeleted, 0);
+        // 只显示审核通过的梦境
+        wrapper.eq(Dream::getAuditStatus, "PASSED");
         if (categoryId != null) {
             wrapper.eq(Dream::getCategoryId, categoryId);
         }
@@ -188,26 +190,21 @@ public class DreamService {
 
         // 批量查询用户
         Set<Long> userIds = dreams.stream().map(Dream::getUserId).collect(Collectors.toSet());
-        Map<Long, User> userMap = userIds.stream()
-                .map(uid -> userMapper.selectById(uid))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(User::getId, u -> u));
+        List<User> users = userMapper.selectBatchIds(userIds);
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u));
 
         // 批量查询分类
         Set<Long> categoryIds = dreams.stream().map(Dream::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
-        Map<Long, DreamCategory> categoryMap = categoryIds.stream()
-                .map(cid -> dreamCategoryMapper.selectById(cid))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(DreamCategory::getId, c -> c));
+        List<DreamCategory> categories = categoryIds.isEmpty() ? Collections.emptyList() : dreamCategoryMapper.selectBatchIds(categoryIds);
+        Map<Long, DreamCategory> categoryMap = categories.stream().collect(Collectors.toMap(DreamCategory::getId, c -> c));
 
-        // 批量查询点赞数
+        // 批量查询点赞数 (IN 子查询，一次请求代替 N 次)
         Set<Long> dreamIds = dreams.stream().map(Dream::getId).collect(Collectors.toSet());
-        Map<Long, Long> likeCountMap = new HashMap<>();
-        for (Long dreamId : dreamIds) {
-            LambdaQueryWrapper<DreamLike> lw = new LambdaQueryWrapper<>();
-            lw.eq(DreamLike::getDreamId, dreamId);
-            likeCountMap.put(dreamId, dreamLikeMapper.selectCount(lw));
-        }
+        LambdaQueryWrapper<DreamLike> lw = new LambdaQueryWrapper<>();
+        lw.in(DreamLike::getDreamId, dreamIds);
+        List<DreamLike> likes = dreamLikeMapper.selectList(lw);
+        Map<Long, Integer> likeCountMap = likes.stream()
+                .collect(Collectors.groupingBy(DreamLike::getDreamId, Collectors.summingInt(l -> 1)));
 
         Page<DreamListResponse> result = new Page<>();
         result.setCurrent(dreamPage.getCurrent());
@@ -217,6 +214,7 @@ public class DreamService {
             DreamListResponse resp = new DreamListResponse();
             resp.setId(d.getId());
             resp.setUserId(d.getUserId());
+            resp.setCategoryId(d.getCategoryId());
             User user = userMap.get(d.getUserId());
             if (user != null) {
                 resp.setNickname(user.getNickname());
@@ -232,7 +230,7 @@ public class DreamService {
             resp.setIsRecurring(d.getIsRecurring());
             resp.setTags(d.getTags());
             resp.setCreateTime(d.getCreateTime());
-            resp.setLikeCount(likeCountMap.getOrDefault(d.getId(), 0L).intValue());
+            resp.setLikeCount(likeCountMap.getOrDefault(d.getId(), 0));
             return resp;
         }).collect(Collectors.toList()));
         return result;
@@ -247,7 +245,7 @@ public class DreamService {
             resp.setNickname(user.getNickname());
             resp.setAvatar(user.getAvatar());
         }
-        DreamCategory cat = dreamCategoryMapper.selectById(dream.getCategoryId());
+        DreamCategory cat = dream.getCategoryId() != null ? dreamCategoryMapper.selectById(dream.getCategoryId()) : null;
         resp.setCategory(cat != null ? cat.getName() : null);
         resp.setDreamDate(dream.getDreamDate());
         resp.setLocation(dream.getLocation());
@@ -259,9 +257,58 @@ public class DreamService {
         resp.setImages(dream.getImages());
         resp.setCreateTime(dream.getCreateTime());
 
+        // 点赞数用 SQL 子查询聚合，减少额外请求
         LambdaQueryWrapper<DreamLike> likeWrapper = new LambdaQueryWrapper<>();
         likeWrapper.eq(DreamLike::getDreamId, dream.getId());
         resp.setLikeCount(Math.toIntExact(dreamLikeMapper.selectCount(likeWrapper)));
         return resp;
+    }
+
+    /**
+     * 批量转换为 detail responses，解决 N+1 查询
+     */
+    private Map<Long, DreamDetailResponse> toDetailResponsesBatch(List<Dream> dreams) {
+        if (dreams == null || dreams.isEmpty()) return Collections.emptyMap();
+
+        // 批量查用户
+        Set<Long> userIds = dreams.stream().map(Dream::getUserId).collect(Collectors.toSet());
+        List<User> users = userMapper.selectBatchIds(userIds);
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u));
+
+        // 批量查分类
+        Set<Long> categoryIds = dreams.stream().map(Dream::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
+        List<DreamCategory> categories = categoryIds.isEmpty() ? Collections.emptyList() : dreamCategoryMapper.selectBatchIds(categoryIds);
+        Map<Long, DreamCategory> categoryMap = categories.stream().collect(Collectors.toMap(DreamCategory::getId, c -> c));
+
+        // 批量查点赞数 (IN 子查询)
+        Set<Long> dreamIds = dreams.stream().map(Dream::getId).collect(Collectors.toSet());
+        LambdaQueryWrapper<DreamLike> likeWrapper = new LambdaQueryWrapper<>();
+        likeWrapper.in(DreamLike::getDreamId, dreamIds);
+        List<DreamLike> likes = dreamLikeMapper.selectList(likeWrapper);
+        Map<Long, Integer> likeCountMap = likes.stream()
+                .collect(Collectors.groupingBy(DreamLike::getDreamId, Collectors.summingInt(l -> 1)));
+
+        Map<Long, DreamDetailResponse> result = new HashMap<>(dreams.size());
+        for (Dream d : dreams) {
+            DreamDetailResponse resp = new DreamDetailResponse();
+            resp.setId(d.getId());
+            resp.setUserId(d.getUserId());
+            User u = userMap.get(d.getUserId());
+            if (u != null) { resp.setNickname(u.getNickname()); resp.setAvatar(u.getAvatar()); }
+            DreamCategory cat = categoryMap.get(d.getCategoryId());
+            resp.setCategory(cat != null ? cat.getName() : null);
+            resp.setDreamDate(d.getDreamDate());
+            resp.setLocation(d.getLocation());
+            resp.setKeywords(d.getKeywords());
+            resp.setClarity(d.getClarity());
+            resp.setDescription(d.getDescription());
+            resp.setIsRecurring(d.getIsRecurring());
+            resp.setTags(d.getTags());
+            resp.setImages(d.getImages());
+            resp.setCreateTime(d.getCreateTime());
+            resp.setLikeCount(likeCountMap.getOrDefault(d.getId(), 0));
+            result.put(d.getId(), resp);
+        }
+        return result;
     }
 }

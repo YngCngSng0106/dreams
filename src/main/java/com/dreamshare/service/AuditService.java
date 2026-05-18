@@ -46,6 +46,7 @@ public class AuditService {
                 audit.setAuditStatus("PASSED");
                 audit.setAuditedAt(now);
                 contentAuditMapper.updateById(audit);
+                syncAuditStatus(audit.getTargetType(), audit.getTargetId(), "PASSED");
                 continue;
             }
 
@@ -56,6 +57,8 @@ public class AuditService {
                     audit.setRejectReason("包含违规内容: " + kw.getKeyword() + " (类型:" + kw.getKeywordType() + ", 级别:" + kw.getSeverity() + ")");
                     audit.setAuditedAt(now);
                     contentAuditMapper.updateById(audit);
+
+                    syncAuditStatus(audit.getTargetType(), audit.getTargetId(), "REJECTED");
 
                     // 根据严重程度处理
                     if ("HIGH".equals(kw.getSeverity())) {
@@ -69,6 +72,23 @@ public class AuditService {
                 audit.setAuditStatus("PASSED");
                 audit.setAuditedAt(now);
                 contentAuditMapper.updateById(audit);
+                syncAuditStatus(audit.getTargetType(), audit.getTargetId(), "PASSED");
+            }
+        }
+    }
+
+    public void syncAuditStatus(String targetType, Long targetId, String status) {
+        if ("DREAM".equals(targetType)) {
+            Dream d = dreamMapper.selectById(targetId);
+            if (d != null) {
+                d.setAuditStatus(status);
+                dreamMapper.updateById(d);
+            }
+        } else if ("COMMENT".equals(targetType)) {
+            Comment c = commentMapper.selectById(targetId);
+            if (c != null) {
+                c.setAuditStatus(status);
+                commentMapper.updateById(c);
             }
         }
     }

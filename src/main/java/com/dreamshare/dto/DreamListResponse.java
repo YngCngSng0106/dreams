@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class DreamListResponse {
     private Long id;
     private Long userId;
+    private Long categoryId;
     private String nickname;
     private String avatar;
     private String category;

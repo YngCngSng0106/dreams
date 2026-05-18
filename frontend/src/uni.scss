@@ -1,38 +1,77 @@
-/* 梦境分享App主题色 */
+/* 梦境分享App主题色 - Glassmorphism 毛玻璃风格 */
+
+// === 核心渐变背景色 ===
+$glass-bg-gradient-1: #0D1B2A;  /* 深钢蓝 - 页面底部/角落 */
+$glass-bg-gradient-2: #1B3A5C;  /* 暗钢蓝 - 页面中部 */
+$glass-bg-gradient-3: #29547E;  /* 中钢蓝 - 页面过渡 */
+$glass-bg-gradient-4: #3A729F;  /* 亮钢蓝 - 页面顶部 */
+
+// === 品牌色（保持不变） ===
 $primary-color: #6C5CE7;
 $primary-light: #A29BFE;
 $primary-dark: #4834D4;
 $secondary-color: #00CEC9;
 $accent-color: #FD79A8;
-$bg-color: #F8F9FE;
-$card-bg: #FFFFFF;
-$text-primary: #2D3436;
-$text-secondary: #636E72;
-$text-light: #B2BEC3;
-$border-color: #E8E8E8;
+
+// === 毛玻璃背景色（半透明白） ===
+$glass-card-bg: rgba(255, 255, 255, 0.08);
+$glass-card-bg-light: rgba(255, 255, 255, 0.05);
+$glass-card-bg-hover: rgba(255, 255, 255, 0.12);
+$glass-navbar-bg: rgba(255, 255, 255, 0.1);
+$glass-tabbar-bg: rgba(13, 27, 42, 0.85);
+$glass-input-bg: rgba(255, 255, 255, 0.08);
+$glass-modal-bg: rgba(13, 27, 42, 0.9);
+$glass-overlay: rgba(0, 0, 0, 0.5);
+
+// === 毛玻璃边框（半透明白） ===
+$glass-border: rgba(255, 255, 255, 0.12);
+$glass-border-light: rgba(255, 255, 255, 0.06);
+$glass-border-active: rgba(255, 255, 255, 0.25);
+
+// === 文字颜色（亮色主题） ===
+$text-primary: #FFFFFF;
+$text-secondary: rgba(255, 255, 255, 0.7);
+$text-tertiary: rgba(255, 255, 255, 0.5);
+$text-placeholder: rgba(255, 255, 255, 0.35);
+$text-inverse: #0C1220;  /* 用于亮色背景上的文字 */
+
+// === 状态色 ===
 $success-color: #00B894;
 $warning-color: #FDCB6E;
 $error-color: #E17055;
 
-/* 页面底色 */
+// === 毛玻璃阴影 ===
+$glass-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+$glass-shadow-light: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+$glass-shadow-color: 0 8rpx 32rpx rgba(108, 92, 231, 0.2);
+
+// === 毛玻璃模糊参数 ===
+$glass-blur: 20px;
+$glass-blur-light: 12px;
+$glass-blur-heavy: 40px;
+
+/* 页面底色 - 深色渐变背景 */
 page {
-    background-color: $bg-color;
+    background: linear-gradient(160deg, $glass-bg-gradient-4 0%, $glass-bg-gradient-3 30%, $glass-bg-gradient-2 60%, $glass-bg-gradient-1 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     color: $text-primary;
     font-size: 28rpx;
 }
 
-/* 通用样式 */
+/* 通用样式 - 毛玻璃卡片 */
 .container {
     padding: 24rpx;
 }
 
 .card {
-    background-color: $card-bg;
+    background: $glass-card-bg;
+    backdrop-filter: blur($glass-blur);
+    -webkit-backdrop-filter: blur($glass-blur);
+    border: 1rpx solid $glass-border;
     border-radius: 24rpx;
     padding: 24rpx;
     margin-bottom: 24rpx;
-    box-shadow: 0 4rpx 16rpx rgba(108, 92, 231, 0.08);
+    box-shadow: $glass-shadow-light;
 }
 
 .section-title {
@@ -45,5 +84,27 @@ page {
 .empty-state {
     text-align: center;
     padding: 80rpx 0;
-    color: $text-light;
+    color: $text-tertiary;
+}
+
+/* 毛玻璃通用工具类 */
+.glass {
+    background: $glass-card-bg;
+    backdrop-filter: blur($glass-blur);
+    -webkit-backdrop-filter: blur($glass-blur);
+    border: 1rpx solid $glass-border;
+}
+
+.glass-light {
+    background: $glass-card-bg-light;
+    backdrop-filter: blur($glass-blur-light);
+    -webkit-backdrop-filter: blur($glass-blur-light);
+    border: 1rpx solid $glass-border-light;
+}
+
+.glass-heavy {
+    background: $glass-overlay;
+    backdrop-filter: blur($glass-blur-heavy);
+    -webkit-backdrop-filter: blur($glass-blur-heavy);
+    border: 1rpx solid $glass-border;
 }

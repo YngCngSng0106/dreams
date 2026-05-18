@@ -37,8 +37,12 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public Result<Boolean> verify(@RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
+    public Result<Boolean> verify(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || authHeader.trim().isEmpty()) {
+            return Result.ok(false);
+        }
+        String token = authHeader;
+        if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
         return Result.ok(jwtUtil.validateToken(token));

@@ -25,7 +25,7 @@ public class SearchController {
     }
 
     @GetMapping("/tags")
-    public Result<List<TagResponse>> tags(@RequestParam String keyword) {
+    public Result<List<TagResponse>> tags(@RequestParam(required = false) String keyword) {
         return Result.ok(searchService.searchTags(keyword));
     }
 }

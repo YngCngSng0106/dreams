@@ -1,4 +1,5 @@
 import { createI18n } from 'vue-i18n';
+import { useSettingsStore } from '@/store/settings';
 
 // 中文
 const zh = {
@@ -612,6 +613,7 @@ const en = {
     }
 };
 
+// Read locale from localStorage at init time (before pinia is ready)
 const locale = uni.getStorageSync('locale') || 'zh';
 
 const i18n = createI18n({
@@ -627,6 +629,13 @@ const i18n = createI18n({
 export function setLocale(lang) {
     i18n.global.locale.value = lang;
     uni.setStorageSync('locale', lang);
+    // Also sync to settings store if pinia is ready
+    try {
+        const settingsStore = useSettingsStore();
+        if (settingsStore) settingsStore.setLanguage(lang);
+    } catch (e) {
+        // pinia not initialized yet
+    }
     uni.$emit('localeChange', lang);
 }
 
